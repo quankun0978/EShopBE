@@ -9,5 +9,7 @@ namespace EShopBE.Dtos.Stock
     {
         public List<string> Colors { get; set; } = new List<string> { };
         public string CodeSKUParent { get; set; } = string.Empty;
+        public int Id { get; set; }
+
     }
 }

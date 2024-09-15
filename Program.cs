@@ -1,7 +1,9 @@
 using EShopBE.Database;
 using EShopBE.interfaces;
 using EShopBE.repositories;
+using EShopBE.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -26,6 +28,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ApplicationDBContext>(options => options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 builder.Services.AddScoped<IStockRepository, StockRepository>();
 builder.Services.AddScoped<IStockRepository, StockRepository>();
+builder.Services.AddScoped<IUploadFileService, UploadFileService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -35,14 +39,26 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseFileServer(new FileServerOptions
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "static")),
+    RequestPath = "/static"
+});
+
 app.UseHttpsRedirection();
+app.UseHsts();
 app.UseCors();
+
+
+app.UseRouting();
+
+app.UseAuthorization();
+
 app.MapControllers();
 var summaries = new[]
 {
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
-
 app.MapGet("/weatherforecast", () =>
 {
     var forecast = Enumerable.Range(1, 5).Select(index =>

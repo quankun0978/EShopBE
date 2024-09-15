@@ -9,6 +9,8 @@ namespace EShopBE.Dtos.Stock
 {
     public class UpdateStockRequest
     {
+        [Required]
+        public int Id { get; set; }
         [DefaultValue("")]
         [Required]
         public string CodeSKU { get; set; } = string.Empty;

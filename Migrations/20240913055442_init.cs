@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -17,7 +18,9 @@ namespace EShopBE.Migrations
                 name: "Stocks",
                 columns: table => new
                 {
-                    codeSKU = table.Column<string>(type: "varchar(255)", nullable: false)
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    codeSKU = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     name = table.Column<string>(type: "text", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
@@ -47,7 +50,7 @@ namespace EShopBE.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Stocks", x => x.codeSKU);
+                    table.PrimaryKey("PK_Stocks", x => x.id);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
         }

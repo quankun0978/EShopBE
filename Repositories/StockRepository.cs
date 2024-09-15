@@ -16,16 +16,20 @@ namespace EShopBE.repositories
     public class StockRepository : IStockRepository
     {
         private readonly ApplicationDBContext _context;
-        public StockRepository(ApplicationDBContext context)
+        private readonly IUploadFileService _uploadFileService;
+        public StockRepository(ApplicationDBContext context, IUploadFileService uploadFileService)
         {
             _context = context;
+            _uploadFileService = uploadFileService;
+
         }
         public string GenCode(string code)
         {
             return code != null ? string.Concat(code.Split(' ').Where(n => !string.IsNullOrWhiteSpace(n)).Select(w => char.ToUpper(w[0]))) : "";
         }
-        public async Task AddStockRangeAsync(CreateStockRequest stock)
+        public async Task AddStockRangeAsync(HttpRequest request, CreateStockRequest stock)
         {
+            var ImageUrl = await _uploadFileService.UploadFile(request, stock.Image, "stock");
             var stockParent = new Stock
             {
                 CodeSKU = stock.CodeSKU,
@@ -40,7 +44,7 @@ namespace EShopBE.repositories
                 Status = stock.Status,
                 Type = stock.Type,
                 Unit = stock.Unit,
-                ImageUrl = stock.ImageUrl,
+                ImageUrl = ImageUrl,
                 IsParent = 1,
                 Description = stock.Description
             };
@@ -66,12 +70,14 @@ namespace EShopBE.repositories
                    Status = s.Status,
                    Type = s.Type,
                    Unit = s.Unit,
-                   ImageUrl = s.ImageUrl,
+                   ImageUrl = ImageUrl,
                    IsParent = s.IsParent,
                    Description = s.Description
                };
            }
+
            );
+            Console.WriteLine("check " + string.Join(", ", stock.Stocks.Select(p => $"{p.CodeSKU}")));
 
             //             var ListCodeSKU = stock.Stocks.Select(p => p.CodeSKU);
             //             var productsWithSameInitials = await GetStocksByInitialsAsync(stock.CodeSKU);
@@ -105,6 +111,7 @@ namespace EShopBE.repositories
             //             );
 
             // var productModels = await Task.WhenAll(productTasks);
+
             await _context.Stocks.AddRangeAsync(productModels);
             await _context.SaveChangesAsync();
         }
@@ -130,7 +137,7 @@ namespace EShopBE.repositories
             var listCodeColor = colors.Select(c => GenCode(c));
 
             var listSKUParent = await _context.Stocks
-                 .Where(d => d.CodeSKU != null && d.CodeSKU.Contains(codeSKU) && !d.CodeSKU.Equals(codeSKU))
+                 .Where(d => d.CodeSKU != null && d.CodeSKU.Contains(codeSKU + "-") && !d.CodeSKU.Equals(codeSKU))
                  .Select(d => d.CodeSKU)
                  .ToListAsync();
             var maxId = listSKUParent.Count() > 0
@@ -140,23 +147,68 @@ namespace EShopBE.repositories
             {
                 return codeSKU + "-" + GenCode(c) + (maxId + index + 1).ToString();
             });
-
+            Console.WriteLine("check current" + string.Join(", ", colors.Select(p => $"{p}")));
+            Console.WriteLine("check2 " + codeSKU);
             // Await all tasks and convert the result to a List<string>
             var data = await Task.WhenAll(listNewSkuTasks);
 
             return data.ToList();
         }
 
-        public Task<List<string>> GenerateListSkuUpdateAsync(List<string> colors, string codeSKU)
+        public async Task<List<string>> GenerateListSkuUpdateAsync(List<string> colors, string codeSKU, int id)
         {
-            throw new NotImplementedException();
+            var listCodeColor = colors.Select(c => GenCode(c));
+            // var stockModel = await _context.Stocks.FindAsync(id);
+
+            var listSKUParent = await _context.Stocks
+                .Where(d => d.CodeSKU != null && d.Color != null && d.CodeSKU.Contains(codeSKU + "-") && !d.CodeSKU.Equals(codeSKU) && colors.Contains(d.Color))
+                .Select(d => d.CodeSKU)
+                .ToListAsync();
+
+            var listColorCurrent = await _context.Stocks
+                 .Where(d => d.CodeSKU != null && d.CodeSKU.Contains(codeSKU) && !d.CodeSKU.Equals(codeSKU)).Select(s => s.Color)
+                 .ToListAsync();
+            Console.WriteLine("check current" + string.Join(", ", listColorCurrent.Select(p => $"{p}")));
+
+            var listColorNotExists = colors.Where(c => listColorCurrent.Any(s => !listColorCurrent.Contains(c))).Select(c => c).ToList();
+            var lisColorComplete = listColorNotExists.Count() > 0 ? listColorNotExists : colors;
+            Console.WriteLine("check " + string.Join(", ", lisColorComplete.Select(p => $"{p}")));
+            Console.WriteLine("CHECCK PARENT" + codeSKU);
+            if (lisColorComplete != null)
+            {
+                var listSKUNew = await GenerateListSkuAsync(lisColorComplete, codeSKU);
+                string[] mergedArray = listSKUParent.Concat(listSKUNew).ToArray();
+                Console.WriteLine("check " + codeSKU);
+                return mergedArray.ToList();
+            }
+            return listSKUParent;
+
+
+            // var maxId = listSKUParent.Count() > 0
+            //            ? listSKUParent.Select(k => GetNumber(k.Split("-")[1])).Max()
+            //            : 0;
+            // var listNewSkuTasks = colors.Select(async (c, index) =>
+            // {
+            //     var p = codeSKU + "-" + GenCode(c);
+            //     var dt = listSKUParent.Where(m => m.Contains(p)).ToList();
+            //     var codeSKUColor = listColorCurrent.Where(i => i.Color == c).ToList();
+            //     Console.WriteLine(p);
+            //     Console.WriteLine("check " + string.Join(", ", dt.Select(p => $"{p}")));
+            //     // var newSKU = codeSKUColor.Count() == 0 ? codeSKU + "-" + GenCode(c) + (maxId + 1).ToString() : codeSKUColor[0].CodeSKU;
+            //     // maxId++;
+            //     return newSKU;
+            // });
+
+            // Await all tasks and convert the result to a List<string>
+            // var data = await Task.WhenAll(listNewSkuTasks);
+
+            // return data.ToList();
         }
 
         public async Task<string> GenerateSkuAsync(string name)
         {
             var productsWithSameInitials = await GetStocksByInitialsAsync(GenCode(name));
 
-            Console.WriteLine(productsWithSameInitials.ToString());
             var maxId = productsWithSameInitials.Any() ? productsWithSameInitials
        .Where(p => p.CodeSKU != null && p.CodeSKU.Length > GenCode(name).Length) // Lọc những CodeSKU có độ dài lớn hơn initials.Length
        .Select(p => p.CodeSKU != null ? int.Parse(p.CodeSKU.Substring(GenCode(name).Length)) : 0) // Lấy phần số sau initials
@@ -171,16 +223,16 @@ namespace EShopBE.repositories
         {
             var stocks = _context.Stocks.AsQueryable();
             if (!string.IsNullOrEmpty(stockQuery.CodeSKU))
-                stocks = stocks.Where(p => p.CodeSKU != null && p.CodeSKU.Contains(stockQuery.CodeSKU));
+                stocks = stocks.Where(p => p.CodeSKU != null && p.CodeSKU.Contains(stockQuery.CodeSKU.Trim()));
 
             if (!string.IsNullOrEmpty(stockQuery.Name))
-                stocks = stocks.Where(p => p.Name != null && p.Name.Contains(stockQuery.Name));
+                stocks = stocks.Where(p => p.Name != null && p.Name.Contains(stockQuery.Name.Trim()));
 
             if (!string.IsNullOrEmpty(stockQuery.Group))
-                stocks = stocks.Where(p => p.Group != null && p.Group.Contains(stockQuery.Group));
+                stocks = stocks.Where(p => p.Group != null && p.Group.Contains(stockQuery.Group.Trim()));
 
             if (!string.IsNullOrEmpty(stockQuery.Unit))
-                stocks = stocks.Where(p => p.Unit != null && p.Unit.Contains(stockQuery.Unit));
+                stocks = stocks.Where(p => p.Unit != null && p.Unit.Contains(stockQuery.Unit.Trim()));
 
             if (stockQuery.Price.ToString() != null)
                 stocks = stocks.Where(p => p.Price <= stockQuery.Price);
@@ -189,13 +241,13 @@ namespace EShopBE.repositories
                 stocks = stocks.Where(p => p.IsHide == stockQuery.IsHide);
 
             if (!string.IsNullOrEmpty(stockQuery.Type) && stockQuery.Type != "Tất cả")
-                stocks = stocks.Where(p => p.Type != null && p.Type.Contains(stockQuery.Type));
+                stocks = stocks.Where(p => p.Type != null && p.Type.Contains(stockQuery.Type.Trim()));
 
             if (!string.IsNullOrEmpty(stockQuery.ManagerBy) && stockQuery.ManagerBy != "Tất cả")
-                stocks = stocks.Where(p => p.ManagerBy != null && p.ManagerBy.Contains(stockQuery.ManagerBy));
+                stocks = stocks.Where(p => p.ManagerBy != null && p.ManagerBy.Contains(stockQuery.ManagerBy.Trim()));
 
             if (!string.IsNullOrEmpty(stockQuery.Status) && stockQuery.Status != "Tất cả")
-                stocks = stocks.Where(p => p.Status != null && p.Status.Contains(stockQuery.Status));
+                stocks = stocks.Where(p => p.Status != null && p.Status.Contains(stockQuery.Status.Trim()));
             var skipNumber = (stockQuery.PageNumber - 1) * stockQuery.PageSize;
             int TotalRecord = _context.Stocks.Count();
             int totalPage = stocks.Count() <= stockQuery.PageSize ? 1 : _context.Stocks.Count() % stockQuery.PageSize == 0 ? stocks.Count() / stockQuery.PageSize : (stocks.Count() / stockQuery.PageSize) + 1;
@@ -223,7 +275,8 @@ namespace EShopBE.repositories
 
         public async Task<ResStockDto<Stock>> GetStocksByCodeSKUAsync(string codeSKU)
         {
-            var dataByCodeSKU = await _context.Stocks.FindAsync(codeSKU);
+            var dataByCodeSKU = await _context.Stocks
+                .FirstOrDefaultAsync(stock => stock.CodeSKU == codeSKU);
             var atributes = await _context.Stocks.Where(s => s.CodeSKU != null && s.CodeSKU.Contains(codeSKU + "-") && !s.CodeSKU.Equals(codeSKU)).ToListAsync();
 
             return new ResStockDto<Stock>
@@ -241,20 +294,47 @@ namespace EShopBE.repositories
             return data;
         }
 
-        public Task<bool> IsListCodeSKU(IEnumerable<string> codeSKU)
+        public async Task<bool> IsListCodeSKU(IEnumerable<string> ListCodeSKU)
         {
-            throw new NotImplementedException();
+            return await _context.Stocks.AnyAsync(s => ListCodeSKU.Contains(s.CodeSKU));
+
         }
 
         public async Task<bool> IsCodeSKU(string codeSKU)
         {
-            return await _context.Stocks.AnyAsync(p => p.CodeSKU == codeSKU);
+            return await _context.Stocks.AnyAsync(s => s.CodeSKU == codeSKU);
         }
 
+        public async Task<bool> IsIdStock(int id)
+        {
+            return await _context.Stocks.AnyAsync(s => s.Id == id);
+        }
+
+        public async Task UpdateProductsAsync(Stock stock)
+        {
+            var productModel = await _context.Stocks.FindAsync(stock.Id);
+            if (productModel != null)
+            {
+                productModel.Name = stock.Name;
+                productModel.Barcode = stock.Barcode;
+                productModel.Color = stock.Color;
+                productModel.Unit = stock.Unit;
+                productModel.Description = stock.Description;
+                productModel.Group = stock.Group;
+                productModel.ImageUrl = stock.ImageUrl;
+                productModel.IsHide = stock.IsHide;
+                productModel.Status = stock.Status;
+                productModel.Price = stock.Price;
+                productModel.Sell = stock.Sell;
+                await _context.SaveChangesAsync();
+            }
+        }
         public async Task UpdateStockRangeAsync(UpdateStockRequest stock, IEnumerable<string> listSKUs)
         {
+            var stockParentModel = await _context.Stocks.FindAsync(stock.Id);
             var stockParent = new Stock
             {
+                Id = stock.Id,
                 CodeSKU = stock.CodeSKU,
                 Name = stock.Name,
                 Barcode = stock.Barcode,
@@ -271,48 +351,57 @@ namespace EShopBE.repositories
                 IsParent = 1,
                 Description = stock.Description
             };
-            stock.Stocks.Add(stockParent);
-            if (stock.Stocks.Count() > 0)
+            if (stock.IsParent == 0)
             {
-                var listSKUParent = await _context.Stocks
-              .Where(d => d.CodeSKU != null && d.CodeSKU.Contains(stock.CodeSKU) && !d.CodeSKU.Equals(stock.CodeSKU))
-              .Select(d => d.CodeSKU)
-              .ToListAsync();
-                var index = 0;
-                var maxId = listSKUParent.Count() > 0
-          ? listSKUParent.Select(k => GetNumber(k.Split("-")[1])).Max()
-          : 0;
-                foreach (var updateRequest in stock.Stocks)
+                await UpdateProductsAsync(stockParent);
+            }
+            else
+            {
+                stock.Stocks.Add(stockParent);
+                if (stock.Stocks.Count() > 0)
                 {
-                    var existingProduct = await _context.Stocks.FirstOrDefaultAsync(p => p.CodeSKU == updateRequest.CodeSKU);
-                    if (listSKUs.Count() > 0)
+                    var listSKUParent = await _context.Stocks
+                  .Where(d => d.CodeSKU != null && d.CodeSKU.Contains(stock.CodeSKU) && !d.CodeSKU.Equals(stock.CodeSKU))
+                  .Select(d => d.CodeSKU)
+                  .ToListAsync();
+                    var index = 0;
+                    var maxId = listSKUParent.Count() > 0
+              ? listSKUParent.Select(k => GetNumber(k.Split("-")[1])).Max()
+              : 0;
+                    foreach (var updateRequest in stock.Stocks)
                     {
-                        await DeleteStockAsync(listSKUs);
+                        var existingProduct = await _context.Stocks.FirstOrDefaultAsync(p => p.Id == updateRequest.Id);
+                        if (listSKUs.Count() > 0)
+                        {
+                            await DeleteStockAsync(listSKUs);
+                        }
+                        if (existingProduct != null)
+                        {
+                            // Update existing product with new values
+                            // existingProduct.CodeSKU = updateRequest.IsParent == 0 ? updateRequest.CodeSKU.Contains('-') ? $" {updateRequest.CodeSKU.Replace(updateRequest.CodeSKU.Split('-')[0], productParent[0].CodeSKU)}" : $" {productParent[0].CodeSKU}-{p.CodeSKU}" : updateRequest.CodeSKU;
+                            existingProduct.CodeSKU = existingProduct.CodeSKU != null ? stockParentModel != null ? stockParentModel.CodeSKU != null ? existingProduct.CodeSKU.Replace(stockParentModel.CodeSKU, stock.CodeSKU) : existingProduct.CodeSKU : existingProduct.CodeSKU : existingProduct.CodeSKU;
+                            existingProduct.Name = updateRequest.Name;
+                            existingProduct.Barcode = updateRequest.Barcode;
+                            existingProduct.Color = updateRequest.Color;
+                            existingProduct.Unit = updateRequest.Unit;
+                            existingProduct.Description = updateRequest.Description;
+                            existingProduct.Group = updateRequest.Group;
+                            existingProduct.ImageUrl = updateRequest.ImageUrl;
+                            existingProduct.IsHide = updateRequest.IsHide;
+                            existingProduct.Status = updateRequest.Status;
+                            existingProduct.Price = updateRequest.Price;
+                            existingProduct.Sell = updateRequest.Sell;
+                            // Example property update
+                            Console.WriteLine(1);
+                        }
+                        if (!updateRequest.Id.HasValue)
+                        {
+                            updateRequest.CodeSKU = stock.CodeSKU + "-" + GenCode(updateRequest.Color) + (maxId + index + 1).ToString();
+                            index++;
+                            await _context.Stocks.AddAsync(updateRequest);
+                        }
+                        await _context.SaveChangesAsync();
                     }
-                    if (existingProduct != null)
-                    {
-                        // Update existing product with new values
-                        // existingProduct.CodeSKU = updateRequest.IsParent == 0 ? updateRequest.CodeSKU.Contains('-') ? $" {updateRequest.CodeSKU.Replace(updateRequest.CodeSKU.Split('-')[0], productParent[0].CodeSKU)}" : $" {productParent[0].CodeSKU}-{p.CodeSKU}" : updateRequest.CodeSKU;
-                        existingProduct.Name = updateRequest.Name;
-                        existingProduct.Barcode = updateRequest.Barcode;
-                        existingProduct.Color = updateRequest.Color;
-                        existingProduct.Unit = updateRequest.Unit;
-                        existingProduct.Description = updateRequest.Description;
-                        existingProduct.Group = updateRequest.Group;
-                        existingProduct.ImageUrl = updateRequest.ImageUrl;
-                        existingProduct.IsHide = updateRequest.IsHide;
-                        existingProduct.Status = updateRequest.Status;
-                        existingProduct.Price = updateRequest.Price;
-                        existingProduct.Sell = updateRequest.Sell;
-                        // Example property update
-                        Console.WriteLine(1);
-                    }
-                    else
-                    {
-                        updateRequest.CodeSKU = stock.CodeSKU + "-" + GenCode(updateRequest.Color) + (maxId + index + 1).ToString();
-                        await _context.Stocks.AddAsync(updateRequest);
-                    }
-                    await _context.SaveChangesAsync();
                 }
             }
         }

@@ -9,7 +9,10 @@ namespace EShopBE.models
 {
     public class Stock
     {
+
         [Key]
+        [Column("id")]
+        public int? Id { get; set; }
         [Column("codeSKU")]
         public string? CodeSKU { get; set; }
 

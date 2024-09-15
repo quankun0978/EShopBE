@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EShopBE.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20240910112409_init")]
+    [Migration("20240913055442_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -26,13 +26,20 @@ namespace EShopBE.Migrations
 
             modelBuilder.Entity("EShopBE.models.Stock", b =>
                 {
-                    b.Property<string>("CodeSKU")
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("codeSKU");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Barcode")
                         .HasColumnType("text")
                         .HasColumnName("barcode");
+
+                    b.Property<string>("CodeSKU")
+                        .HasColumnType("longtext")
+                        .HasColumnName("codeSKU");
 
                     b.Property<string>("Color")
                         .HasColumnType("text")
@@ -86,7 +93,7 @@ namespace EShopBE.Migrations
                         .HasColumnType("text")
                         .HasColumnName("unit");
 
-                    b.HasKey("CodeSKU");
+                    b.HasKey("Id");
 
                     b.ToTable("Stocks");
                 });

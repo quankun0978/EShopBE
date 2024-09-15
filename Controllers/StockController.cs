@@ -83,13 +83,30 @@ namespace EShopBE.controllers
             }
         }
         [HttpPost]
-        [Route("ListgenerateSKUUpdate")]
+        [Route("list_generate_SKU_update")]
         public async Task<IActionResult> GenerateListUpdateSKU([FromBody] GenerateCodeListSKURequest payload)
         {
             try
             {
-
-                var codeSKU = await _stockRepo.GenerateListSkuUpdateAsync(payload.Colors, payload.CodeSKUParent);
+                if (payload.CodeSKUParent == null)
+                {
+                    return BadRequest(new ResDto<string>
+                    {
+                        Message = "code sku is required",
+                        Success = false,
+                        Data = null
+                    });
+                }
+                if (await _stockRepo.IsIdStock(payload.Id) == false)
+                {
+                    return BadRequest(new ResDto<string>
+                    {
+                        Message = "code sku is not exists",
+                        Success = false,
+                        Data = null
+                    });
+                }
+                var codeSKU = await _stockRepo.GenerateListSkuUpdateAsync(payload.Colors, payload.CodeSKUParent, payload.Id);
                 return Ok(new ResDto<List<string>>
                 {
                     Message = "SUCCESS",
@@ -158,7 +175,7 @@ namespace EShopBE.controllers
                     });
 
                 }
-                await _stockRepo.AddStockRangeAsync(stock);
+                await _stockRepo.AddStockRangeAsync(Request, stock);
                 return Ok(new ResDto<string>
                 {
                     Message = "SUCCESS",
@@ -249,11 +266,19 @@ namespace EShopBE.controllers
 
             try
             {
-                if (!await _stockRepo.IsCodeSKU(updateStockBody.ListSKUsUpdate.CodeSKU))
+                if (updateStockBody.ListSKUsUpdate.CodeSKU == null || updateStockBody.ListSKUsUpdate.CodeSKU == "")
                 {
                     return BadRequest(new ResDto<string>
                     {
-                        Message = "Code SKU is not exsist",
+                        Message = "Code SKU is not required",
+                        Success = false
+                    });
+                }
+                if (!await _stockRepo.IsIdStock(updateStockBody.ListSKUsUpdate.Id))
+                {
+                    return BadRequest(new ResDto<string>
+                    {
+                        Message = "Stock is not exsist",
                         Success = false
                     });
                 }
@@ -271,6 +296,8 @@ namespace EShopBE.controllers
                 return StatusCode(500, new ResDto<string> { Message = "Erorr from server: " + ex.Message, Success = false });
             }
         }
+
+
 
     }
 }
