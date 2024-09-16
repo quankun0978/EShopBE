@@ -52,7 +52,7 @@ namespace EShopBE.Dtos.Stock
         [DefaultValue("")]
         public string Description { get; set; } = string.Empty;
         [DefaultValue("abc.xyz")]
-        public FormFile? Image { get; set; }
+        public FileUploadRequest? Image { get; set; }
         public List<EShopBE.models.Stock> Stocks { get; set; } = new List<models.Stock> { };
     }
 }

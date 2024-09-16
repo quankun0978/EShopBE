@@ -62,6 +62,7 @@ namespace EShopBE.Dtos.Stock
 
         [DefaultValue(0)]
         public int IsParent { get; set; }
+        public FileUploadRequest? Image { get; set; }
         public List<EShopBE.models.Stock> Stocks { get; set; } = new List<models.Stock> { };
     }
 }

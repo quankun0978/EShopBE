@@ -29,7 +29,7 @@ namespace EShopBE.repositories
         }
         public async Task AddStockRangeAsync(HttpRequest request, CreateStockRequest stock)
         {
-            var ImageUrl = await _uploadFileService.UploadFile(request, stock.Image, "stock");
+            var ImageUrl = await _uploadFileService.UploadImage(request, stock.Image, "stocks");
             var stockParent = new Stock
             {
                 CodeSKU = stock.CodeSKU,
@@ -329,9 +329,17 @@ namespace EShopBE.repositories
                 await _context.SaveChangesAsync();
             }
         }
-        public async Task UpdateStockRangeAsync(UpdateStockRequest stock, IEnumerable<string> listSKUs)
+        public async Task UpdateStockRangeAsync(HttpRequest request, UpdateStockRequest stock, IEnumerable<string> listSKUs)
         {
             var stockParentModel = await _context.Stocks.FindAsync(stock.Id);
+            var ImageUrl = stockParentModel.ImageUrl;
+            var isImageFile = _uploadFileService.IsImageFile(request, ImageUrl, "stocks");
+
+            if (isImageFile && stock.Image.FileData != null)
+            {
+                var isDelete = _uploadFileService.DeleteImage(request, ImageUrl, "stocks");
+                ImageUrl = await _uploadFileService.UploadImage(request, stock.Image, "stocks");
+            }
             var stockParent = new Stock
             {
                 Id = stock.Id,
@@ -347,7 +355,7 @@ namespace EShopBE.repositories
                 Status = stock.Status,
                 Type = stock.Type,
                 Unit = stock.Unit,
-                ImageUrl = stock.ImageUrl,
+                ImageUrl = ImageUrl,
                 IsParent = 1,
                 Description = stock.Description
             };

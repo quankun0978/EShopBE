@@ -19,7 +19,7 @@ namespace EShopBE.interfaces
         Task<ResStockDto<Stock>> GetStocksByCodeSKUAsync(string codeSKU);
         Task<ResPaginateStockDto<Stock>> GetAllStockAsync(StockQuery stockQuery);
         Task AddStockRangeAsync(HttpRequest request, CreateStockRequest stock);
-        Task UpdateStockRangeAsync(UpdateStockRequest stock, IEnumerable<string> listSKUs);
+        Task UpdateStockRangeAsync(HttpRequest request, UpdateStockRequest stock, IEnumerable<string> listSKUs);
         Task DeleteStockAsync(IEnumerable<string> listSKUs);
         Task<bool> IsListCodeSKU(IEnumerable<string> codeSKU);
         Task<bool> IsCodeSKU(string codeSKU);

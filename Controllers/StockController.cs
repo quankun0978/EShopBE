@@ -282,7 +282,7 @@ namespace EShopBE.controllers
                         Success = false
                     });
                 }
-                await _stockRepo.UpdateStockRangeAsync(updateStockBody.ListSKUsUpdate, updateStockBody.ListSKUsDelele);
+                await _stockRepo.UpdateStockRangeAsync(Request, updateStockBody.ListSKUsUpdate, updateStockBody.ListSKUsDelele);
 
                 return Ok(new ResDto<string>
                 {

@@ -110,5 +110,36 @@ namespace EShopBE.Controllers
                 });
             }
         }
+
+        [HttpPost]
+        [Route("image")]
+        public async Task<IActionResult> UploadFile([FromBody] FileUploadRequest request)
+        {
+            if (request == null || string.IsNullOrEmpty(request.FileData))
+            {
+                return BadRequest("Invalid request.");
+            }
+
+            try
+            {
+                // Decode the Base64 string
+                var fileBytes = Convert.FromBase64String(request.FileData);
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "static\\Uploads\\Images\\Stocks");
+                var filePath = Path.Combine(uploadsFolder, request.FileName);
+
+                // Ensure the uploads directory exists
+                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+
+                // Write the file to the server
+                await System.IO.File.WriteAllBytesAsync(filePath, fileBytes);
+
+                return Ok(new { message = "File uploaded successfully!", filePath });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+
+        }
     }
 }
