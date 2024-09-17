@@ -77,41 +77,6 @@ namespace EShopBE.repositories
            }
 
            );
-            Console.WriteLine("check " + string.Join(", ", stock.Stocks.Select(p => $"{p.CodeSKU}")));
-
-            //             var ListCodeSKU = stock.Stocks.Select(p => p.CodeSKU);
-            //             var productsWithSameInitials = await GetStocksByInitialsAsync(stock.CodeSKU);
-            //             var listCodeColor = productsWithSameInitials.Select(p => GenCode(p.Color));
-            //             var productTasks = stock.Stocks.Select(async (p, index) =>
-            //             {
-            //                 var maxIdColor = listCodeColor.Any() ? listCodeColor
-            //  .Where(l => l.Length > GenCode(p.Color).Length) // Lọc những CodeSKU có độ dài lớn hơn initials.Length
-            //  .Select(l => int.Parse(GenCode(p.Color).Substring(GenCode(p.Color).Length))) // Lấy phần số sau initials
-            //  .DefaultIfEmpty(0) // Trả về 0 nếu không có phần tử nào
-            //  .Max() : 0;
-            //                 return new Stock
-            //                 {
-            //                     CodeSKU = p.Color != null && p.IsParent == 0 ? $"{stock.CodeSKU}-{GenCode(p.Color)}{maxIdColor + 1 + index}" : $"{stock.CodeSKU}",
-            //                     Name = p.Name,
-            //                     Barcode = p.Barcode,
-            //                     Color = p.Color,
-            //                     Group = p.Group,
-            //                     IsHide = p.IsHide,
-            //                     ManagerBy = p.ManagerBy,
-            //                     Price = p.Price,
-            //                     Sell = p.Sell,
-            //                     Status = p.Status,
-            //                     Type = p.Type,
-            //                     Unit = p.Unit,
-            //                     ImageUrl = p.ImageUrl,
-            //                     IsParent = p.IsParent,
-            //                     Description = p.Description
-            //                 };
-            //             }
-            //             );
-
-            // var productModels = await Task.WhenAll(productTasks);
-
             await _context.Stocks.AddRangeAsync(productModels);
             await _context.SaveChangesAsync();
         }
@@ -128,7 +93,6 @@ namespace EShopBE.repositories
         public int GetNumber(string code)
         {
             string number = new string(code.Where(char.IsDigit).ToArray());
-            Console.WriteLine(number);
             return int.Parse(number);
         }
 
@@ -147,8 +111,6 @@ namespace EShopBE.repositories
             {
                 return codeSKU + "-" + GenCode(c) + (maxId + index + 1).ToString();
             });
-            Console.WriteLine("check current" + string.Join(", ", colors.Select(p => $"{p}")));
-            Console.WriteLine("check2 " + codeSKU);
             // Await all tasks and convert the result to a List<string>
             var data = await Task.WhenAll(listNewSkuTasks);
 
@@ -168,41 +130,17 @@ namespace EShopBE.repositories
             var listColorCurrent = await _context.Stocks
                  .Where(d => d.CodeSKU != null && d.CodeSKU.Contains(codeSKU) && !d.CodeSKU.Equals(codeSKU)).Select(s => s.Color)
                  .ToListAsync();
-            Console.WriteLine("check current" + string.Join(", ", listColorCurrent.Select(p => $"{p}")));
 
             var listColorNotExists = colors.Where(c => listColorCurrent.Any(s => !listColorCurrent.Contains(c))).Select(c => c).ToList();
             var lisColorComplete = listColorNotExists.Count() > 0 ? listColorNotExists : colors;
-            Console.WriteLine("check " + string.Join(", ", lisColorComplete.Select(p => $"{p}")));
-            Console.WriteLine("CHECCK PARENT" + codeSKU);
+            // Console.WriteLine("check " + string.Join(", ", lisColorComplete.Select(p => $"{p}")));
             if (lisColorComplete != null)
             {
                 var listSKUNew = await GenerateListSkuAsync(lisColorComplete, codeSKU);
                 string[] mergedArray = listSKUParent.Concat(listSKUNew).ToArray();
-                Console.WriteLine("check " + codeSKU);
                 return mergedArray.ToList();
             }
             return listSKUParent;
-
-
-            // var maxId = listSKUParent.Count() > 0
-            //            ? listSKUParent.Select(k => GetNumber(k.Split("-")[1])).Max()
-            //            : 0;
-            // var listNewSkuTasks = colors.Select(async (c, index) =>
-            // {
-            //     var p = codeSKU + "-" + GenCode(c);
-            //     var dt = listSKUParent.Where(m => m.Contains(p)).ToList();
-            //     var codeSKUColor = listColorCurrent.Where(i => i.Color == c).ToList();
-            //     Console.WriteLine(p);
-            //     Console.WriteLine("check " + string.Join(", ", dt.Select(p => $"{p}")));
-            //     // var newSKU = codeSKUColor.Count() == 0 ? codeSKU + "-" + GenCode(c) + (maxId + 1).ToString() : codeSKUColor[0].CodeSKU;
-            //     // maxId++;
-            //     return newSKU;
-            // });
-
-            // Await all tasks and convert the result to a List<string>
-            // var data = await Task.WhenAll(listNewSkuTasks);
-
-            // return data.ToList();
         }
 
         public async Task<string> GenerateSkuAsync(string name)
@@ -386,7 +324,6 @@ namespace EShopBE.repositories
                         if (existingProduct != null)
                         {
                             // Update existing product with new values
-                            // existingProduct.CodeSKU = updateRequest.IsParent == 0 ? updateRequest.CodeSKU.Contains('-') ? $" {updateRequest.CodeSKU.Replace(updateRequest.CodeSKU.Split('-')[0], productParent[0].CodeSKU)}" : $" {productParent[0].CodeSKU}-{p.CodeSKU}" : updateRequest.CodeSKU;
                             existingProduct.CodeSKU = existingProduct.CodeSKU != null ? stockParentModel != null ? stockParentModel.CodeSKU != null ? existingProduct.CodeSKU.Replace(stockParentModel.CodeSKU, stock.CodeSKU) : existingProduct.CodeSKU : existingProduct.CodeSKU : existingProduct.CodeSKU;
                             existingProduct.Name = updateRequest.Name;
                             existingProduct.Barcode = updateRequest.Barcode;
@@ -400,7 +337,6 @@ namespace EShopBE.repositories
                             existingProduct.Price = updateRequest.Price;
                             existingProduct.Sell = updateRequest.Sell;
                             // Example property update
-                            Console.WriteLine(1);
                         }
                         if (!updateRequest.Id.HasValue)
                         {

@@ -48,7 +48,7 @@ namespace EShopBE.controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                Console.WriteLine(ex.Message);
                 return StatusCode(500, new ResDto<string> { Message = "Erorr from server: " + ex.Message, Success = false });
             }
         }
@@ -78,7 +78,7 @@ namespace EShopBE.controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                Console.WriteLine(ex.Message);
                 return StatusCode(500, new ResDto<string> { Message = "Erorr from server: " + ex.Message, Success = false });
             }
         }
@@ -116,7 +116,7 @@ namespace EShopBE.controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                Console.WriteLine(ex.Message);
                 return StatusCode(500, new ResDto<string> { Message = "Erorr from server: " + ex.Message, Success = false });
             }
         }
@@ -185,7 +185,7 @@ namespace EShopBE.controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                Console.WriteLine(ex.Message);
                 return StatusCode(500, new ResDto<string> { Message = "Erorr from server: " + ex.Message, Success = false });
             }
         }
@@ -219,7 +219,7 @@ namespace EShopBE.controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                Console.WriteLine(ex.Message);
                 return StatusCode(500, new ResDto<string> { Message = "Erorr from server: " + ex.Message, Success = false });
             }
         }
@@ -262,8 +262,6 @@ namespace EShopBE.controllers
         [Route("update")]
         public async Task<IActionResult> UpdateProduct([FromBody] UpdateStockBody updateStockBody)
         {
-            // productModel.CodeSKU = await _skuService.GenerateSkuAsync(product.Name);
-
             try
             {
                 if (updateStockBody.ListSKUsUpdate.CodeSKU == null || updateStockBody.ListSKUsUpdate.CodeSKU == "")
@@ -292,12 +290,10 @@ namespace EShopBE.controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                Console.WriteLine(ex.Message);
                 return StatusCode(500, new ResDto<string> { Message = "Erorr from server: " + ex.Message, Success = false });
             }
         }
-
-
 
     }
 }
