@@ -264,6 +264,8 @@ namespace EShopBE.controllers
         {
             try
             {
+                var isCheck = await _stockRepo.IsCodeSKU(updateStockBody.ListSKUsUpdate.CodeSKU);
+
                 if (updateStockBody.ListSKUsUpdate.CodeSKU == null || updateStockBody.ListSKUsUpdate.CodeSKU == "")
                 {
                     return BadRequest(new ResDto<string>
@@ -279,6 +281,15 @@ namespace EShopBE.controllers
                         Message = "Stock is not exsist",
                         Success = false
                     });
+                }
+                if (isCheck)
+                {
+                    return BadRequest(new ResDto<string>
+                    {
+                        Message = "Code SKU is exists",
+                        Success = false
+                    });
+
                 }
                 await _stockRepo.UpdateStockRangeAsync(Request, updateStockBody.ListSKUsUpdate, updateStockBody.ListSKUsDelele);
 
