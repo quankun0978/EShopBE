@@ -17,16 +17,18 @@ namespace EShopBE.repositories
     {
         private readonly ApplicationDBContext _context;
         private readonly IUploadFileService _uploadFileService;
+        // khoi tao
         public StockRepository(ApplicationDBContext context, IUploadFileService uploadFileService)
         {
             _context = context;
             _uploadFileService = uploadFileService;
-
         }
+        // tao code moi dua tren cac chu cai dau
         public string GenCode(string code)
         {
             return code != null ? string.Concat(code.Split(' ').Where(n => !string.IsNullOrWhiteSpace(n)).Select(w => char.ToUpper(w[0]))) : "";
         }
+        // them moi nhieu san pham
         public async Task AddStockRangeAsync(HttpRequest request, CreateStockRequest stock)
         {
             var ImageUrl = await _uploadFileService.UploadImage(request, stock.Image, "stocks");
@@ -81,6 +83,8 @@ namespace EShopBE.repositories
             await _context.SaveChangesAsync();
         }
 
+        // xoa nhieu san pham
+
         public async Task DeleteStockAsync(IEnumerable<string> listSKUs)
         {
             var productsToDelete = await _context.Stocks
@@ -89,6 +93,8 @@ namespace EShopBE.repositories
             _context.RemoveRange(productsToDelete);
             await _context.SaveChangesAsync();
         }
+
+        // lay ra 
 
         public int GetNumber(string code)
         {
