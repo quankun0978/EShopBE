@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace EShopBE.Dtos.Stock
 {
+    // dữ liệu truyền lên để cập nhật hàng hóa
     public class UpdateStockRequest
     {
         [Required]

@@ -22,6 +22,8 @@ namespace EShopBE.controllers
             _stockRepo = stockRepo;
         }
 
+        // Generate mã sku
+
         [HttpPost]
         [Route("generate_SKU")]
         public async Task<IActionResult> GenerateSKU([FromBody] GenerateCodeSKURequest payload)
@@ -52,6 +54,9 @@ namespace EShopBE.controllers
                 return StatusCode(500, new ResDto<string> { Message = "Erorr from server: " + ex.Message, Success = false });
             }
         }
+
+        // generate 1 danh sách các mã sku
+
         [HttpPost]
         [Route("list_generate_SKU")]
         public async Task<IActionResult> GenerateListSKU([FromBody] GenerateCodeListSKURequest payload)
@@ -82,6 +87,9 @@ namespace EShopBE.controllers
                 return StatusCode(500, new ResDto<string> { Message = "Erorr from server: " + ex.Message, Success = false });
             }
         }
+
+        //
+
         [HttpPost]
         [Route("list_generate_SKU_update")]
         public async Task<IActionResult> GenerateListUpdateSKU([FromBody] GenerateCodeListSKURequest payload)
@@ -121,6 +129,8 @@ namespace EShopBE.controllers
             }
         }
 
+        // lấy ra danh sách các hàng hóa
+
         [HttpPost]
         [Route("list")]
         public async Task<IActionResult> GetAllProduct([FromBody] StockQuery stockQuery)
@@ -145,6 +155,8 @@ namespace EShopBE.controllers
                 });
             }
         }
+
+        // thêm mới nhiều hàng hóa
 
         [HttpPost]
         [Route("add")]
@@ -190,6 +202,8 @@ namespace EShopBE.controllers
             }
         }
 
+        // xóa nhiều hàng hóa
+
         [HttpPost]
         [Route("delete")]
         public async Task<IActionResult> DeleteStock([FromBody] IEnumerable<string> listSKUs)
@@ -209,7 +223,7 @@ namespace EShopBE.controllers
                     });
                 }
 
-                await _stockRepo.DeleteStockAsync(listSKUs);
+                await _stockRepo.DeleteStockAsync(listSKUs, true);
 
                 return Ok(new ResDto<string>
                 {
@@ -223,6 +237,8 @@ namespace EShopBE.controllers
                 return StatusCode(500, new ResDto<string> { Message = "Erorr from server: " + ex.Message, Success = false });
             }
         }
+
+        // chi tiết hàng hóa
 
         [HttpGet]
         [Route("detail")]
@@ -258,6 +274,9 @@ namespace EShopBE.controllers
                 });
             }
         }
+
+        // cập nhật danh sách các hàng hóa
+
         [HttpPost]
         [Route("update")]
         public async Task<IActionResult> UpdateProduct([FromBody] UpdateStockBody updateStockBody)

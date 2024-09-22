@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace EShopBE.Dtos.Stock
 {
+    // dữ liệu truyền lên khi genereate mã sku
     public class GenerateCodeSKURequest
     {
         [Required]

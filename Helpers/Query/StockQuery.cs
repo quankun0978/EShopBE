@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace EShopBE.Helpers.Query
 {
+    // dữ liệu truyền lên để lấy ra danh sách các hàng hóa
     public class StockQuery
     {
         [DefaultValue("")]

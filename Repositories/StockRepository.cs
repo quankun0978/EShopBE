@@ -23,12 +23,12 @@ namespace EShopBE.repositories
             _context = context;
             _uploadFileService = uploadFileService;
         }
-        // tao code moi dua tren cac chu cai dau
+        // xử lý đưa ra mã code mới bằng việc lấy ra các chữ cái đầu của tên sản phẩm
         public string GenCode(string code)
         {
             return code != null ? string.Concat(code.Split(' ').Where(n => !string.IsNullOrWhiteSpace(n)).Select(w => char.ToUpper(w[0]))) : "";
         }
-        // them moi nhieu san pham
+        //xử lý thêm mới sản phẩm
         public async Task AddStockRangeAsync(HttpRequest request, CreateStockRequest stock)
         {
             var ImageUrl = await _uploadFileService.UploadImage(request, stock.Image, "stocks");
@@ -83,24 +83,44 @@ namespace EShopBE.repositories
             await _context.SaveChangesAsync();
         }
 
-        // xoa nhieu san pham
+        // xử lý xóa sản phẩm
 
-        public async Task DeleteStockAsync(IEnumerable<string> listSKUs)
+        public async Task DeleteStockAsync(IEnumerable<string> listSKUs, bool IsParent)
         {
-            var productsToDelete = await _context.Stocks
-                .Where(x => listSKUs.Contains(x.CodeSKU))
-                .ToListAsync();
-            _context.RemoveRange(productsToDelete);
+            if (IsParent)
+            {
+                // var productsToDelete = await _context.Stocks
+                //         .Where(x => x.CodeSKU.Contains(x.CodeSKU))
+                //         .ToListAsync();
+                // _context.RemoveRange(productsToDelete);
+                foreach (var item in listSKUs)
+                {
+                    var codeSkuParent = item.Split("-").Count() > 1 ? item.Split("-")[0] : item;
+                    var productsToDelete = await _context.Stocks
+                       .Where(x => x.CodeSKU != null && x.CodeSKU.Contains(codeSkuParent))
+                       .ToListAsync();
+                    _context.RemoveRange(productsToDelete);
+                }
+            }
+            else
+            {
+                var productsToDelete = await _context.Stocks
+                   .Where(x => listSKUs.Contains(x.CodeSKU))
+                   .ToListAsync();
+                _context.RemoveRange(productsToDelete);
+            }
             await _context.SaveChangesAsync();
         }
 
-        // lay ra 
+        // xử lý lấy ra ký tự là số ở trong mã sku 
 
         public int GetNumber(string code)
         {
             string number = new string(code.Where(char.IsDigit).ToArray());
             return int.Parse(number);
         }
+
+        // xử lý generate danh sách mã sku
 
         public async Task<List<string>> GenerateListSkuAsync(List<string> colors, string codeSKU)
         {
@@ -122,6 +142,8 @@ namespace EShopBE.repositories
 
             return data.ToList();
         }
+
+        // xử lý generate danh sách mã sku cập nhật
 
         public async Task<List<string>> GenerateListSkuUpdateAsync(List<string> colors, string codeSKU, int id)
         {
@@ -149,6 +171,8 @@ namespace EShopBE.repositories
             return listSKUParent;
         }
 
+        // xử lý generate mã sku từ tên
+
         public async Task<string> GenerateSkuAsync(string name)
         {
             var productsWithSameInitials = await GetStocksByInitialsAsync(GenCode(name));
@@ -162,6 +186,8 @@ namespace EShopBE.repositories
             var newSku = $"{GenCode(name)}{maxId + 1}";
             return newSku;
         }
+
+        // xử lý lấy ra danh sách các hàng hóa
 
         public async Task<ResPaginateStockDto<Stock>> GetAllStockAsync(StockQuery stockQuery)
         {
@@ -206,7 +232,7 @@ namespace EShopBE.repositories
                     Data = null
                 };
             }
-            var data = await stocks.Skip(skipNumber).Take(stockQuery.PageSize).ToListAsync();
+            var data = await stocks.Skip(skipNumber).Take(stockQuery.PageSize).Where(p => p.IsParent == 1).ToListAsync();
             return new ResPaginateStockDto<Stock>
             {
                 TotalPage = totalPage,
@@ -216,6 +242,8 @@ namespace EShopBE.repositories
                 Data = data
             };
         }
+
+        // xử lấy ra danh hàng hóa theo mã sku
 
         public async Task<ResStockDto<Stock>> GetStocksByCodeSKUAsync(string codeSKU)
         {
@@ -230,6 +258,8 @@ namespace EShopBE.repositories
             };
         }
 
+        // xử lấy ra danh hàng hóa theo ký tự đầu
+
         public async Task<List<Stock>> GetStocksByInitialsAsync(string initial)
         {
             var data = await _context.Stocks
@@ -238,21 +268,29 @@ namespace EShopBE.repositories
             return data;
         }
 
+        // xử lý kiểm tra xem danh sách mã có mã nào không tồn tại không
+
         public async Task<bool> IsListCodeSKU(IEnumerable<string> ListCodeSKU)
         {
             return await _context.Stocks.AnyAsync(s => ListCodeSKU.Contains(s.CodeSKU));
 
         }
 
+        // xử lý kiểm tra xem mã sku có tồn tại không
+
         public async Task<bool> IsCodeSKU(string codeSKU)
         {
             return await _context.Stocks.AnyAsync(s => s.CodeSKU == codeSKU);
         }
 
+        // xử lý kiểm tra xem id có tồn tại không
+
         public async Task<bool> IsIdStock(int id)
         {
             return await _context.Stocks.AnyAsync(s => s.Id == id);
         }
+
+        // xử lý cập nhật 1 hàng hóa
 
         public async Task UpdateProductsAsync(Stock stock)
         {
@@ -273,6 +311,9 @@ namespace EShopBE.repositories
                 await _context.SaveChangesAsync();
             }
         }
+
+        // xử lý cập nhật nhiều hàng hóa
+
         public async Task UpdateStockRangeAsync(HttpRequest request, UpdateStockRequest stock, IEnumerable<string> listSKUs)
         {
             var stockParentModel = await _context.Stocks.FindAsync(stock.Id);
@@ -325,7 +366,7 @@ namespace EShopBE.repositories
                         var existingProduct = await _context.Stocks.FirstOrDefaultAsync(p => p.Id == updateRequest.Id);
                         if (listSKUs.Count() > 0)
                         {
-                            await DeleteStockAsync(listSKUs);
+                            await DeleteStockAsync(listSKUs, false);
                         }
                         if (existingProduct != null)
                         {

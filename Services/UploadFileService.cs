@@ -8,6 +8,7 @@ namespace EShopBE.Services
 {
     public class UploadFileService : IUploadFileService
     {
+        //xủ lý tải ảnh lên server
         public bool DeleteImage(HttpRequest request, string fileUrl, string path)
         {
             try
@@ -32,7 +33,7 @@ namespace EShopBE.Services
                 return false;
             }
         }
-
+        // xử lý xóa ảnh khỏi server
         public bool IsImageFile(HttpRequest request, string fileUrl, string path)
         {
             try
@@ -49,29 +50,7 @@ namespace EShopBE.Services
             }
         }
 
-        public async Task<string> UploadFile(HttpRequest request, IFormFile file, string path)
-        {
-            try
-            {
-                if (file == null || file.Length == 0)
-                {
-                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "static\\Uploads\\Images\\Stocks");
-                    var filePath = Path.Combine(uploadsFolder, file.FileName);
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await file.CopyToAsync(stream);
-                    }
-                    var fileUrl = $"{request.Scheme}://{request.Host}/static/uploads/images/{path}/{file.FileName}";
-                    return fileUrl;
-                }
-                return "";
-                // Tạo URL để trả về cho client
-            }
-            catch (Exception ex)
-            {
-                return "";
-            }
-        }
+        // xử lý kiểm tra xem ảnh đã tồn tại trong server chưa
 
         public async Task<string> UploadImage(HttpRequest request, FileUploadRequest fileData, string path)
         {

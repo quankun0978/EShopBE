@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace EShopBE.Dtos.Stock
 {
+    // dữ liệu truyền lên để thêm mới hàng hóa
     public class CreateStockRequest
     {
         [DefaultValue("")]
