@@ -160,14 +160,18 @@ namespace EShopBE.repositories
                  .ToListAsync();
 
             var listColorNotExists = colors.Where(c => listColorCurrent.Any(s => !listColorCurrent.Contains(c))).Select(c => c).ToList();
-            var lisColorComplete = listColorNotExists.Count() > 0 ? listColorNotExists : colors;
+
+            var lisColorComplete = listColorNotExists.Count() > 0 ? listColorNotExists : [];
+            Console.WriteLine("check list gen" + string.Join(", ", lisColorComplete.Select(p => $"{p}")));
+
             // Console.WriteLine("check " + string.Join(", ", lisColorComplete.Select(p => $"{p}")));
-            if (lisColorComplete != null)
+            if (lisColorComplete != null && lisColorComplete.Count() > 0)
             {
                 var listSKUNew = await GenerateListSkuAsync(lisColorComplete, codeSKU);
                 string[] mergedArray = listSKUParent.Concat(listSKUNew).ToArray();
                 return mergedArray.ToList();
             }
+
             return listSKUParent;
         }
 
@@ -219,8 +223,8 @@ namespace EShopBE.repositories
             if (!string.IsNullOrEmpty(stockQuery.Status) && stockQuery.Status != "Tất cả")
                 stocks = stocks.Where(p => p.Status != null && p.Status.Contains(stockQuery.Status.Trim()));
             var skipNumber = (stockQuery.PageNumber - 1) * stockQuery.PageSize;
-            int TotalRecord = _context.Stocks.Count();
-            int totalPage = stocks.Count() <= stockQuery.PageSize ? 1 : _context.Stocks.Count() % stockQuery.PageSize == 0 ? stocks.Count() / stockQuery.PageSize : (stocks.Count() / stockQuery.PageSize) + 1;
+            int TotalRecord = _context.Stocks.Where(p => p.IsParent == 1).Count();
+            int totalPage = TotalRecord <= stockQuery.PageSize ? 1 : _context.Stocks.Count() % stockQuery.PageSize == 0 ? TotalRecord / stockQuery.PageSize : (TotalRecord / stockQuery.PageSize) + 1;
             if (stockQuery.PageNumber > totalPage || stockQuery.PageNumber == 0)
             {
                 return new ResPaginateStockDto<Stock>
@@ -232,7 +236,7 @@ namespace EShopBE.repositories
                     Data = null
                 };
             }
-            var data = await stocks.Skip(skipNumber).Take(stockQuery.PageSize).Where(p => p.IsParent == 1).ToListAsync();
+            var data = await stocks.Where(p => p.IsParent == 1).Skip(skipNumber).Take(stockQuery.PageSize).ToListAsync();
             return new ResPaginateStockDto<Stock>
             {
                 TotalPage = totalPage,

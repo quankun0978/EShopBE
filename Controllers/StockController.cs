@@ -301,11 +301,11 @@ namespace EShopBE.controllers
                         Success = false
                     });
                 }
-                if (isCheck)
+                if (!isCheck)
                 {
                     return BadRequest(new ResDto<string>
                     {
-                        Message = "Code SKU is exists",
+                        Message = "Code SKU is not exists",
                         Success = false
                     });
 
