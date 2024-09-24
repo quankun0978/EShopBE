@@ -115,7 +115,7 @@ namespace EShopBE.controllers
                     });
                 }
                 var codeSKU = await _stockRepo.GenerateListSkuUpdateAsync(payload.Colors, payload.CodeSKUParent, payload.Id);
-                return Ok(new ResDto<List<string>>
+                return Ok(new ResDto<List<string?>>
                 {
                     Message = "SUCCESS",
                     Success = true,
@@ -283,9 +283,8 @@ namespace EShopBE.controllers
         {
             try
             {
-                var isCheck = await _stockRepo.IsCodeSKU(updateStockBody.ListSKUsUpdate.CodeSKU);
 
-                if (updateStockBody.ListSKUsUpdate.CodeSKU == null || updateStockBody.ListSKUsUpdate.CodeSKU == "")
+                if (updateStockBody.ListSKUsUpdate == null || updateStockBody.ListSKUsUpdate.CodeSKU == null || updateStockBody.ListSKUsUpdate.CodeSKU == "")
                 {
                     return BadRequest(new ResDto<string>
                     {
@@ -301,6 +300,7 @@ namespace EShopBE.controllers
                         Success = false
                     });
                 }
+                var isCheck = await _stockRepo.IsCodeSKU(updateStockBody.ListSKUsUpdate.CodeSKU);
                 if (!isCheck)
                 {
                     return BadRequest(new ResDto<string>
@@ -310,7 +310,8 @@ namespace EShopBE.controllers
                     });
 
                 }
-                await _stockRepo.UpdateStockRangeAsync(Request, updateStockBody.ListSKUsUpdate, updateStockBody.ListSKUsDelele);
+                var listDelete = updateStockBody.ListSKUsDelele != null ? updateStockBody.ListSKUsDelele : [];
+                await _stockRepo.UpdateStockRangeAsync(Request, updateStockBody.ListSKUsUpdate, listDelete);
 
                 return Ok(new ResDto<string>
                 {

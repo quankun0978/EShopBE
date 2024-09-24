@@ -17,7 +17,7 @@ namespace EShopBE.interfaces
         Task<string> GenerateSkuAsync(string name);
         // generate danh sách mã sku
         Task<List<string>> GenerateListSkuAsync(List<string> colors, string codeSKU);
-        Task<List<string>> GenerateListSkuUpdateAsync(List<string> colors, string codeSKU, int id);
+        Task<List<string?>> GenerateListSkuUpdateAsync(List<string> colors, string codeSKU, int id);
         // api danh sách hàng hóa theo mã SKU
         Task<ResStockDto<Stock>> GetStocksByCodeSKUAsync(string codeSKU);
         // lấy ra danh sách các hàng hóa
