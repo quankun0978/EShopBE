@@ -31,7 +31,11 @@ namespace EShopBE.repositories
         //xử lý thêm mới sản phẩm
         public async Task AddStockRangeAsync(HttpRequest request, CreateStockRequest stock)
         {
-            var ImageUrl = await _uploadFileService.UploadImage(request, stock.Image, "stocks");
+            var ImageUrl = "";
+            if (stock.Image != null)
+            {
+                ImageUrl = await _uploadFileService.UploadImage(request, stock.Image, "stocks");
+            }
             var stockParent = new Stock
             {
                 CodeSKU = stock.CodeSKU,
@@ -168,10 +172,12 @@ namespace EShopBE.repositories
             if (lisColorComplete != null && lisColorComplete.Count() > 0)
             {
                 var listSKUNew = await GenerateListSkuAsync(lisColorComplete, codeSKU);
-                string[] mergedArray = listSKUParent.Concat(listSKUNew).ToArray();
-                return mergedArray.ToList();
+                if (listSKUNew != null && listSKUNew != null)
+                {
+                    string[] mergedArray = listSKUParent.Concat(listSKUNew).ToArray();
+                    return mergedArray.ToList();
+                }
             }
-
             return listSKUParent;
         }
 
@@ -321,10 +327,15 @@ namespace EShopBE.repositories
         public async Task UpdateStockRangeAsync(HttpRequest request, UpdateStockRequest stock, IEnumerable<string> listSKUs)
         {
             var stockParentModel = await _context.Stocks.FindAsync(stock.Id);
-            var ImageUrl = stockParentModel.ImageUrl;
+            var ImageUrl = "";
+            if (stockParentModel != null)
+            {
+                ImageUrl = stockParentModel.ImageUrl;
+            }
+
             var isImageFile = _uploadFileService.IsImageFile(request, ImageUrl, "stocks");
 
-            if (isImageFile && stock.Image.FileData != null)
+            if (isImageFile && stock.Image != null && stock.Image.FileData != null)
             {
                 var isDelete = _uploadFileService.DeleteImage(request, ImageUrl, "stocks");
                 ImageUrl = await _uploadFileService.UploadImage(request, stock.Image, "stocks");
