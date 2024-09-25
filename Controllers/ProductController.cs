@@ -112,7 +112,7 @@ namespace EShopBE.controllers
                         Data = null
                     });
                 }
-                var codeSKU = await _ProductRepo.GenerateListSkuUpdateAsync(payload.Colors, payload.CodeSKUParent, payload.Id);
+                var codeSKU = await _ProductRepo.GenerateListSkuUpdateAsync(payload.Colors, payload.Id);
                 return Ok(new ResDto<List<string?>>
                 {
                     Message = Constants.SUCCESS,
@@ -160,9 +160,7 @@ namespace EShopBE.controllers
             // productModel.CodeSKU = await _skuService.GenerateSkuAsync(product.Name);
             try
             {
-                var isCheck = await _ProductRepo.IsCodeSKU(Product.CodeSKU);
-
-
+                // var isCheck = await _ProductRepo.IsProductExsits(Product.);
                 if (Product.CodeSKU == null)
                 {
                     return BadRequest(new ResDto<string>
@@ -172,15 +170,15 @@ namespace EShopBE.controllers
                     });
 
                 }
-                if (isCheck)
-                {
-                    return BadRequest(new ResDto<string>
-                    {
-                        Message = Constants.CODE_SKU_PRODUCT_EXISTS,
-                        Success = false
-                    });
+                // if (isCheck)
+                // {
+                //     return BadRequest(new ResDto<string>
+                //     {
+                //         Message = Constants.CODE_SKU_PRODUCT_EXISTS,
+                //         Success = false
+                //     });
 
-                }
+                // }
                 await _ProductRepo.AddProductRangeAsync(Request, Product);
                 return Ok(new ResDto<string>
                 {
@@ -200,13 +198,13 @@ namespace EShopBE.controllers
 
         [HttpPost]
         [Route("delete")]
-        public async Task<IActionResult> DeleteProduct([FromBody] IEnumerable<string> listSKUs)
+        public async Task<IActionResult> DeleteProduct([FromBody] IEnumerable<int> listIds)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             // productModel.CodeSKU = await _skuService.GenerateSkuAsync(product.Name);
             try
             {
-                var isCheck = await _ProductRepo.IsListCodeSKU(listSKUs);
+                var isCheck = await _ProductRepo.IsListIds(listIds);
 
                 if (!isCheck)
                 {
@@ -217,7 +215,7 @@ namespace EShopBE.controllers
                     });
                 }
 
-                await _ProductRepo.DeleteProductAsync(listSKUs, true);
+                await _ProductRepo.DeleteProductAsync(listIds, true);
 
                 return Ok(new ResDto<string>
                 {
@@ -236,12 +234,12 @@ namespace EShopBE.controllers
 
         [HttpGet]
         [Route("detail")]
-        public async Task<IActionResult> GetProductByCodeSKU(string codeSKU)
+        public async Task<IActionResult> GetProductByCodeSKU(int id)
         {
             try
             {
-                var data = await _ProductRepo.GetProductsByCodeSKUAsync(codeSKU);
-                if (!await _ProductRepo.IsCodeSKU(codeSKU))
+                var data = await _ProductRepo.GetProductsByCodeSKUAsync(id);
+                if (!await _ProductRepo.IsProductExsits(id))
                 {
                     return BadRequest(new ResDto<string>
                     {

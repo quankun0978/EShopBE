@@ -10,25 +10,27 @@ namespace EShopBE.interfaces
     {
         // lấy ra danh sách hàng hóa theo mã SKU
         Task<List<Product>> GetProductsByInitialsAsync(string initials);
+
+        Task AddProductAsync(Product product);
         // generate mã sku
         Task<string> GenerateSkuAsync(string name);
         // generate danh sách mã sku
         Task<List<string>> GenerateListSkuAsync(List<string> colors, string codeSKU);
-        Task<List<string?>> GenerateListSkuUpdateAsync(List<string> colors, string codeSKU, int id);
+        Task<List<string?>> GenerateListSkuUpdateAsync(List<string> colors, int id);
         // api danh sách hàng hóa theo mã SKU
-        Task<ResProductDto<Product>> GetProductsByCodeSKUAsync(string codeSKU);
+        Task<ResProductDto<Product>> GetProductsByCodeSKUAsync(int id);
         // lấy ra danh sách các hàng hóa
         Task<ResPaginateProductDto<Product>> GetAllProductAsync(ProductQuery ProductQuery);
         // thêm mới hàng hóa
         Task AddProductRangeAsync(HttpRequest request, CreateProductRequest Product);
         // cập nhật hàng hóa
-        Task UpdateProductRangeAsync(HttpRequest request, UpdateProductRequest Product, IEnumerable<string> listSKUs);
+        Task UpdateProductRangeAsync(HttpRequest request, UpdateProductRequest Product, IEnumerable<int> listSKUs);
         // xóa hàng hóa 
-        Task DeleteProductAsync(IEnumerable<string> listSKUs, bool IsParent);
+        Task DeleteProductAsync(IEnumerable<int> listIds, bool IsParent);
         // kiểm tra xem danh sách mã có mã nào không tồn tại không
-        Task<bool> IsListCodeSKU(IEnumerable<string> codeSKU);
+        Task<bool> IsListIds(IEnumerable<int> listIds);
         // kiểm tra xem mã sku có tồn tại không
-        Task<bool> IsCodeSKU(string codeSKU);
+        Task<bool> IsProductExsits(int id);
         // kiểm tra xem id có tồn tại không
         Task<bool> IsIdProduct(int id);
 

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EShopBE.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20240925070905_Init")]
+    [Migration("20240925143557_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -73,6 +73,10 @@ namespace EShopBE.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("text")
                         .HasColumnName("name");
+
+                    b.Property<int>("ParentId")
+                        .HasColumnType("int")
+                        .HasColumnName("parentId");
 
                     b.Property<long>("Price")
                         .HasColumnType("bigint")

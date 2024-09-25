@@ -34,6 +34,7 @@ namespace EShopBE.Migrations
                     isParent = table.Column<ulong>(type: "bit", nullable: false),
                     type = table.Column<string>(type: "text", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    parentId = table.Column<int>(type: "int", nullable: false),
                     manager_by = table.Column<string>(type: "text", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     status = table.Column<string>(type: "text", nullable: true)

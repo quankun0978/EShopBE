@@ -5,6 +5,6 @@ namespace EShopBE.Dtos.Product
     public class UpdateProductBody
     {
         public UpdateProductRequest? ListSKUsUpdate { get; set; }
-        public IEnumerable<string>? ListSKUsDelele { get; set; }
+        public IEnumerable<int>? ListSKUsDelele { get; set; }
     }
 }

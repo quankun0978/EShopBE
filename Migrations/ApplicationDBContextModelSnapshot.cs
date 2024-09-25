@@ -71,6 +71,10 @@ namespace EShopBE.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name");
 
+                    b.Property<int>("ParentId")
+                        .HasColumnType("int")
+                        .HasColumnName("parentId");
+
                     b.Property<long>("Price")
                         .HasColumnType("bigint")
                         .HasColumnName("price");
