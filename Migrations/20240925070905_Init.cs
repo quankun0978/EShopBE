@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace EShopBE.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,7 +15,7 @@ namespace EShopBE.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "Stocks",
+                name: "Products",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "int", nullable: false)
@@ -50,7 +50,7 @@ namespace EShopBE.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Stocks", x => x.id);
+                    table.PrimaryKey("PK_Products", x => x.id);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
         }
@@ -59,7 +59,7 @@ namespace EShopBE.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Stocks");
+                name: "Products");
         }
     }
 }

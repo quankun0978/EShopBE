@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace EShopBE.models
 {
-    public class Stock
+    public class Product
     {
 
         [Key]
@@ -35,11 +32,14 @@ namespace EShopBE.models
         [Column("isHide", TypeName = "text")]
 
         public string? IsHide { get; set; }
-        [Column("isParent", TypeName = "bit")]
+        [Column("parentId", TypeName = "bit")]
 
         public int IsParent { get; set; }
 
         [Column("type", TypeName = "text")]
+
+        public int ParentId { get; set; }
+        [Column("parentId", TypeName = "int")]
 
         public string? Type { get; set; }
         [Column("manager_by", TypeName = "text")]
@@ -66,6 +66,6 @@ namespace EShopBE.models
         [Column("imageUrl", TypeName = "text")]
 
         public string? ImageUrl { get; set; }
-        public List<Stock>? Stocks;
+        public List<Product>? Products;
     }
 }

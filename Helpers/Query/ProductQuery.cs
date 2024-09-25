@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
+
 using System.ComponentModel;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace EShopBE.Helpers.Query
 {
     // dữ liệu truyền lên để lấy ra danh sách các hàng hóa
-    public class StockQuery
+    public class ProductQuery
     {
         [DefaultValue("")]
         public string CodeSKU { get; set; } = string.Empty;

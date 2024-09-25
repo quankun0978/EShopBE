@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+
 using EShopBE.models;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +10,6 @@ namespace EShopBE.Database
 : base(options)
         {
         }
-        public DbSet<Stock> Stocks { get; set; }
+        public DbSet<Product> Products { get; set; }
     }
 }

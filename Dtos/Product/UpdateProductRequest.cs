@@ -1,14 +1,11 @@
-using System;
-using System.Collections.Generic;
+
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace EShopBE.Dtos.Stock
+namespace EShopBE.Dtos.Product
 {
     // dữ liệu truyền lên để cập nhật hàng hóa
-    public class UpdateStockRequest
+    public class UpdateProductRequest
     {
         [Required]
         public int Id { get; set; }
@@ -28,7 +25,7 @@ namespace EShopBE.Dtos.Stock
 
         public long Price { get; set; }
 
-        [DefaultValue("Co")]
+        [DefaultValue("Có")]
         public string IsHide { get; set; } = string.Empty;
         [DefaultValue("")]
 
@@ -64,6 +61,6 @@ namespace EShopBE.Dtos.Stock
         [DefaultValue(0)]
         public int IsParent { get; set; }
         public FileUploadRequest? Image { get; set; }
-        public List<EShopBE.models.Stock> Stocks { get; set; } = new List<models.Stock> { };
+        public List<EShopBE.models.Product> Products { get; set; } = new List<models.Product> { };
     }
 }

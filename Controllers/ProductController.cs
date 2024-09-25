@@ -1,25 +1,23 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+
 using EShopBE.Dtos.Res;
-using EShopBE.Dtos.Stock;
+using EShopBE.Dtos.Product;
 using EShopBE.Helpers.Query;
 using EShopBE.interfaces;
 using EShopBE.models;
 using Microsoft.AspNetCore.Mvc;
+using EShopBE.Resource.Constants;
 
 namespace EShopBE.controllers
 {
-    [Route("api/stock")]
+    [Route("api/product")]
     [ApiController]
 
-    public class StockController : ControllerBase
+    public class ProductController : ControllerBase
     {
-        private readonly IStockRepository _stockRepo;
-        public StockController(IStockRepository stockRepo)
+        private readonly IProductRepository _ProductRepo;
+        public ProductController(IProductRepository ProductRepo)
         {
-            _stockRepo = stockRepo;
+            _ProductRepo = ProductRepo;
         }
 
         // Generate mã sku
@@ -32,17 +30,17 @@ namespace EShopBE.controllers
             {
                 if (payload.ProductName != null)
                 {
-                    var codeSKU = await _stockRepo.GenerateSkuAsync(payload.ProductName);
+                    var codeSKU = await _ProductRepo.GenerateSkuAsync(payload.ProductName);
                     return Ok(new ResDto<string>
                     {
-                        Message = "SUCCESS",
+                        Message = Constants.SUCCESS,
                         Success = true,
                         Data = codeSKU
                     });
                 }
                 return BadRequest(new ResDto<string>
                 {
-                    Message = "Name is required",
+                    Message = Constants.NAME_PRODUCT_REQUIRED,
                     Success = false,
                     Data = null
                 });
@@ -51,7 +49,7 @@ namespace EShopBE.controllers
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return StatusCode(500, new ResDto<string> { Message = "Erorr from server: " + ex.Message, Success = false });
+                return StatusCode(500, new ResDto<string> { Message = Constants.ERROR_FROM_SERVER + ex.Message, Success = false });
             }
         }
 
@@ -65,17 +63,17 @@ namespace EShopBE.controllers
             {
                 if (payload.CodeSKUParent != null)
                 {
-                    var listSKU = await _stockRepo.GenerateListSkuAsync(payload.Colors, payload.CodeSKUParent);
+                    var listSKU = await _ProductRepo.GenerateListSkuAsync(payload.Colors, payload.CodeSKUParent);
                     return Ok(new ResDto<List<string>>
                     {
-                        Message = "SUCCESS",
+                        Message = Constants.SUCCESS,
                         Success = true,
                         Data = listSKU
                     });
                 }
                 return BadRequest(new ResDto<string>
                 {
-                    Message = "code sku is required",
+                    Message = Constants.CODE_SKU_PRODUCT_REQUIRED,
                     Success = false,
                     Data = null
                 });
@@ -84,7 +82,7 @@ namespace EShopBE.controllers
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return StatusCode(500, new ResDto<string> { Message = "Erorr from server: " + ex.Message, Success = false });
+                return StatusCode(500, new ResDto<string> { Message = Constants.ERROR_FROM_SERVER + ex.Message, Success = false });
             }
         }
 
@@ -100,24 +98,24 @@ namespace EShopBE.controllers
                 {
                     return BadRequest(new ResDto<string>
                     {
-                        Message = "code sku is required",
+                        Message = Constants.CODE_SKU_PRODUCT_REQUIRED,
                         Success = false,
                         Data = null
                     });
                 }
-                if (await _stockRepo.IsIdStock(payload.Id) == false)
+                if (await _ProductRepo.IsIdProduct(payload.Id) == false)
                 {
                     return BadRequest(new ResDto<string>
                     {
-                        Message = "code sku is not exists",
+                        Message = Constants.CODE_SKU_PRODUCT_NOT_EXISTS,
                         Success = false,
                         Data = null
                     });
                 }
-                var codeSKU = await _stockRepo.GenerateListSkuUpdateAsync(payload.Colors, payload.CodeSKUParent, payload.Id);
+                var codeSKU = await _ProductRepo.GenerateListSkuUpdateAsync(payload.Colors, payload.CodeSKUParent, payload.Id);
                 return Ok(new ResDto<List<string?>>
                 {
-                    Message = "SUCCESS",
+                    Message = Constants.SUCCESS,
                     Success = true,
                     Data = codeSKU
                 });
@@ -125,7 +123,7 @@ namespace EShopBE.controllers
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return StatusCode(500, new ResDto<string> { Message = "Erorr from server: " + ex.Message, Success = false });
+                return StatusCode(500, new ResDto<string> { Message = Constants.ERROR_FROM_SERVER + ex.Message, Success = false });
             }
         }
 
@@ -133,14 +131,14 @@ namespace EShopBE.controllers
 
         [HttpPost]
         [Route("list")]
-        public async Task<IActionResult> GetAllProduct([FromBody] StockQuery stockQuery)
+        public async Task<IActionResult> GetAllProduct([FromBody] ProductQuery ProductQuery)
         {
             try
             {
-                var data = await _stockRepo.GetAllStockAsync(stockQuery);
-                return Ok(new ResDto<ResPaginateStockDto<Stock>>
+                var data = await _ProductRepo.GetAllProductAsync(ProductQuery);
+                return Ok(new ResDto<ResPaginateProductDto<Product>>
                 {
-                    Message = "SUCCESS",
+                    Message = Constants.SUCCESS,
                     Success = true,
                     Data = data
                 });
@@ -148,11 +146,7 @@ namespace EShopBE.controllers
             catch (Exception ex)
             {
                 Console.WriteLine("error" + ex.Message);
-                return StatusCode(500, new ResDto<string>
-                {
-                    Message = "Server is error",
-                    Success = false,
-                });
+                return StatusCode(500, new ResDto<string> { Message = Constants.ERROR_FROM_SERVER + ex.Message, Success = false });
             }
         }
 
@@ -160,20 +154,20 @@ namespace EShopBE.controllers
 
         [HttpPost]
         [Route("add")]
-        public async Task<IActionResult> AddProduct([FromBody] CreateStockRequest stock)
+        public async Task<IActionResult> AddProduct([FromBody] CreateProductRequest Product)
         {
             // if (!ModelState.IsValid) return BadRequest(ModelState);
             // productModel.CodeSKU = await _skuService.GenerateSkuAsync(product.Name);
             try
             {
-                var isCheck = await _stockRepo.IsCodeSKU(stock.CodeSKU);
+                var isCheck = await _ProductRepo.IsCodeSKU(Product.CodeSKU);
 
 
-                if (stock.CodeSKU == null)
+                if (Product.CodeSKU == null)
                 {
                     return BadRequest(new ResDto<string>
                     {
-                        Message = "Code SKU parent is required",
+                        Message = Constants.CODE_SKU_PRODUCT_REQUIRED,
                         Success = false
                     });
 
@@ -182,15 +176,15 @@ namespace EShopBE.controllers
                 {
                     return BadRequest(new ResDto<string>
                     {
-                        Message = "Code SKU is exists",
+                        Message = Constants.CODE_SKU_PRODUCT_EXISTS,
                         Success = false
                     });
 
                 }
-                await _stockRepo.AddStockRangeAsync(Request, stock);
+                await _ProductRepo.AddProductRangeAsync(Request, Product);
                 return Ok(new ResDto<string>
                 {
-                    Message = "SUCCESS",
+                    Message = Constants.SUCCESS,
                     Success = true
                 });
 
@@ -198,7 +192,7 @@ namespace EShopBE.controllers
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return StatusCode(500, new ResDto<string> { Message = "Erorr from server: " + ex.Message, Success = false });
+                return StatusCode(500, new ResDto<string> { Message = Constants.ERROR_FROM_SERVER + ex.Message, Success = false });
             }
         }
 
@@ -206,35 +200,35 @@ namespace EShopBE.controllers
 
         [HttpPost]
         [Route("delete")]
-        public async Task<IActionResult> DeleteStock([FromBody] IEnumerable<string> listSKUs)
+        public async Task<IActionResult> DeleteProduct([FromBody] IEnumerable<string> listSKUs)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             // productModel.CodeSKU = await _skuService.GenerateSkuAsync(product.Name);
             try
             {
-                var isCheck = await _stockRepo.IsListCodeSKU(listSKUs);
+                var isCheck = await _ProductRepo.IsListCodeSKU(listSKUs);
 
                 if (!isCheck)
                 {
                     return BadRequest(new ResDto<string>
                     {
-                        Message = "Code SKU is not exsist",
+                        Message = Constants.CODE_SKU_PRODUCT_NOT_EXISTS,
                         Success = false
                     });
                 }
 
-                await _stockRepo.DeleteStockAsync(listSKUs, true);
+                await _ProductRepo.DeleteProductAsync(listSKUs, true);
 
                 return Ok(new ResDto<string>
                 {
-                    Message = "SUCCESS",
+                    Message = Constants.SUCCESS,
                     Success = true
                 });
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return StatusCode(500, new ResDto<string> { Message = "Erorr from server: " + ex.Message, Success = false });
+                return StatusCode(500, new ResDto<string> { Message = Constants.ERROR_FROM_SERVER + ex.Message, Success = false });
             }
         }
 
@@ -242,24 +236,24 @@ namespace EShopBE.controllers
 
         [HttpGet]
         [Route("detail")]
-        public async Task<IActionResult> GetStockByCodeSKU(string codeSKU)
+        public async Task<IActionResult> GetProductByCodeSKU(string codeSKU)
         {
             try
             {
-                var data = await _stockRepo.GetStocksByCodeSKUAsync(codeSKU);
-                if (!await _stockRepo.IsCodeSKU(codeSKU))
+                var data = await _ProductRepo.GetProductsByCodeSKUAsync(codeSKU);
+                if (!await _ProductRepo.IsCodeSKU(codeSKU))
                 {
                     return BadRequest(new ResDto<string>
                     {
-                        Message = "Code SKU is not exsist",
+                        Message = Constants.CODE_SKU_PRODUCT_NOT_EXISTS,
                         Success = false
                     });
                 }
 
 
-                return Ok(new ResDto<ResStockDto<Stock>>
+                return Ok(new ResDto<ResProductDto<Product>>
                 {
-                    Message = "SUCCESS",
+                    Message = Constants.SUCCESS,
                     Success = true,
                     Data = data
                 });
@@ -267,11 +261,8 @@ namespace EShopBE.controllers
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return StatusCode(500, new ResDto<string>
-                {
-                    Message = "Server is error",
-                    Success = false,
-                });
+                return StatusCode(500, new ResDto<string> { Message = Constants.ERROR_FROM_SERVER + ex.Message, Success = false });
+
             }
         }
 
@@ -279,50 +270,40 @@ namespace EShopBE.controllers
 
         [HttpPost]
         [Route("update")]
-        public async Task<IActionResult> UpdateProduct([FromBody] UpdateStockBody updateStockBody)
+        public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductBody updateProductBody)
         {
             try
             {
 
-                if (updateStockBody.ListSKUsUpdate == null || updateStockBody.ListSKUsUpdate.CodeSKU == null || updateStockBody.ListSKUsUpdate.CodeSKU == "")
+                if (updateProductBody.ListSKUsUpdate == null || updateProductBody.ListSKUsUpdate.CodeSKU == null || updateProductBody.ListSKUsUpdate.CodeSKU == "")
                 {
                     return BadRequest(new ResDto<string>
                     {
-                        Message = "Code SKU is not required",
+                        Message = Constants.CODE_SKU_PRODUCT_REQUIRED,
                         Success = false
                     });
                 }
-                if (!await _stockRepo.IsIdStock(updateStockBody.ListSKUsUpdate.Id))
+                if (!await _ProductRepo.IsIdProduct(updateProductBody.ListSKUsUpdate.Id))
                 {
                     return BadRequest(new ResDto<string>
                     {
-                        Message = "Stock is not exsist",
+                        Message = Constants.CODE_SKU_PRODUCT_NOT_EXISTS,
                         Success = false
                     });
                 }
-                var isCheck = await _stockRepo.IsCodeSKU(updateStockBody.ListSKUsUpdate.CodeSKU);
-                if (!isCheck)
-                {
-                    return BadRequest(new ResDto<string>
-                    {
-                        Message = "Code SKU is not exists",
-                        Success = false
-                    });
-
-                }
-                var listDelete = updateStockBody.ListSKUsDelele != null ? updateStockBody.ListSKUsDelele : [];
-                await _stockRepo.UpdateStockRangeAsync(Request, updateStockBody.ListSKUsUpdate, listDelete);
+                var listDelete = updateProductBody.ListSKUsDelele != null ? updateProductBody.ListSKUsDelele : [];
+                await _ProductRepo.UpdateProductRangeAsync(Request, updateProductBody.ListSKUsUpdate, listDelete);
 
                 return Ok(new ResDto<string>
                 {
-                    Message = "SUCCESS",
+                    Message = Constants.SUCCESS,
                     Success = true
                 });
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return StatusCode(500, new ResDto<string> { Message = "Erorr from server: " + ex.Message, Success = false });
+                return StatusCode(500, new ResDto<string> { Message = Constants.ERROR_FROM_SERVER + ex.Message, Success = false });
             }
         }
 

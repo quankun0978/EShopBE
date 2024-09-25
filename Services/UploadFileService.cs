@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+
 using EShopBE.interfaces;
 
 namespace EShopBE.Services
@@ -18,7 +15,7 @@ namespace EShopBE.Services
                     return false;
                 }
                 var filename = fileUrl.Replace($"{request.Scheme}://{request.Host}/static/uploads/images/{path}/", "");
-                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "static", "Uploads", "Images", "Stocks");
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "static", "Uploads", "Images", "Products");
                 var filePath = Path.Combine(uploadsFolder, filename);
                 if (!System.IO.File.Exists(filePath))
                 {
@@ -39,7 +36,7 @@ namespace EShopBE.Services
             try
             {
                 var filename = fileUrl.Replace($"{request.Scheme}://{request.Host}/static/uploads/images/{path}/", "");
-                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "static", "Uploads", "Images", "Stocks");
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "static", "Uploads", "Images", "Products");
                 var filePath = Path.Combine(uploadsFolder, filename);
                 return true;
             }
@@ -66,7 +63,7 @@ namespace EShopBE.Services
             var uniqueFileName = $"{Path.GetFileNameWithoutExtension(fileData.FileName)}_{Guid.NewGuid()}{Path.GetExtension(fileData.FileName)}";
 
             // Define the uploads folder path
-            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "static", "Uploads", "Images", "Stocks");
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "static", "Uploads", "Images", "Products");
             var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
             // Ensure the uploads directory exists
@@ -75,7 +72,7 @@ namespace EShopBE.Services
             // Write the file to the server
             await System.IO.File.WriteAllBytesAsync(filePath, fileBytes);
             // Create the file URL
-            var fileUrl = $"{request.Scheme}://{request.Host}/static/uploads/images/stocks/{uniqueFileName}";
+            var fileUrl = $"{request.Scheme}://{request.Host}/static/uploads/images/Products/{uniqueFileName}";
             return fileUrl;
         }
     }

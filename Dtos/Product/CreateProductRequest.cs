@@ -1,14 +1,11 @@
-using System;
-using System.Collections.Generic;
+
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace EShopBE.Dtos.Stock
+namespace EShopBE.Dtos.Product
 {
     // dữ liệu truyền lên để thêm mới hàng hóa
-    public class CreateStockRequest
+    public class CreateProductRequest
     {
         [DefaultValue("")]
         [Required]
@@ -54,6 +51,6 @@ namespace EShopBE.Dtos.Stock
         public string Description { get; set; } = string.Empty;
         [DefaultValue("abc.xyz")]
         public FileUploadRequest? Image { get; set; }
-        public List<EShopBE.models.Stock> Stocks { get; set; } = new List<models.Stock> { };
+        public List<EShopBE.models.Product> Products { get; set; } = new List<models.Product> { };
     }
 }

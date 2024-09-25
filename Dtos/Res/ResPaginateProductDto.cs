@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace EShopBE.Dtos.Res
 {
-    public class ResPaginateStockDto<T>
+    public class ResPaginateProductDto<T>
     {
         public int TotalPage { get; set; }
         public int CurrentPage { get; set; }

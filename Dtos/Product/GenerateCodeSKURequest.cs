@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace EShopBE.Dtos.Stock
+using System.ComponentModel.DataAnnotations;
+
+namespace EShopBE.Dtos.Product
 {
     // dữ liệu truyền lên khi genereate mã sku
     public class GenerateCodeSKURequest
