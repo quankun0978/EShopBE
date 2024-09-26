@@ -29,10 +29,7 @@ namespace EShopBE.interfaces
         Task DeleteProductAsync(IEnumerable<int> listIds, bool IsParent);
         // kiểm tra xem danh sách mã có mã nào không tồn tại không
         Task<bool> IsListIds(IEnumerable<int> listIds);
-        // kiểm tra xem mã sku có tồn tại không
-        Task<bool> IsProductExsits(int id);
-        // kiểm tra xem id có tồn tại không
-        Task<bool> IsIdProduct(int id);
-
+        // kiểm tra xem sản phẩm có tồn tại không
+        Task<bool> IsProductExsits(int? id, string? codeSKU, bool byId);
     }
 }

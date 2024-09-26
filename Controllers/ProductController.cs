@@ -103,7 +103,7 @@ namespace EShopBE.controllers
                         Data = null
                     });
                 }
-                if (await _ProductRepo.IsIdProduct(payload.Id) == false)
+                if (await _ProductRepo.IsProductExsits(payload.Id, null, true) == false)
                 {
                     return BadRequest(new ResDto<string>
                     {
@@ -239,7 +239,7 @@ namespace EShopBE.controllers
             try
             {
                 var data = await _ProductRepo.GetProductsByCodeSKUAsync(id);
-                if (!await _ProductRepo.IsProductExsits(id))
+                if (!await _ProductRepo.IsProductExsits(id, null, true))
                 {
                     return BadRequest(new ResDto<string>
                     {
@@ -273,7 +273,7 @@ namespace EShopBE.controllers
             try
             {
 
-                if (updateProductBody.ListSKUsUpdate == null || updateProductBody.ListSKUsUpdate.CodeSKU == null || updateProductBody.ListSKUsUpdate.CodeSKU == "")
+                if (updateProductBody.ListSkuUpdate == null || updateProductBody.ListSkuUpdate.CodeSKU == null || updateProductBody.ListSkuUpdate.CodeSKU == "")
                 {
                     return BadRequest(new ResDto<string>
                     {
@@ -281,7 +281,7 @@ namespace EShopBE.controllers
                         Success = false
                     });
                 }
-                if (!await _ProductRepo.IsIdProduct(updateProductBody.ListSKUsUpdate.Id))
+                if (!await _ProductRepo.IsProductExsits(updateProductBody.ListSkuUpdate.Id, null, true))
                 {
                     return BadRequest(new ResDto<string>
                     {
@@ -289,8 +289,44 @@ namespace EShopBE.controllers
                         Success = false
                     });
                 }
-                var listDelete = updateProductBody.ListSKUsDelele != null ? updateProductBody.ListSKUsDelele : [];
-                await _ProductRepo.UpdateProductRangeAsync(Request, updateProductBody.ListSKUsUpdate, listDelete);
+                var listDelete = updateProductBody.ListSKUsDelete != null ? updateProductBody.ListSKUsDelete : [];
+                await _ProductRepo.UpdateProductRangeAsync(Request, updateProductBody.ListSkuUpdate, listDelete);
+
+                return Ok(new ResDto<string>
+                {
+                    Message = Constants.SUCCESS,
+                    Success = true
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return StatusCode(500, new ResDto<string> { Message = Constants.ERROR_FROM_SERVER + ex.Message, Success = false });
+            }
+        }
+        [HttpPost]
+        [Route("is_code_sku")]
+        public async Task<IActionResult> IsCodeSkuExsist(string codeSKU)
+        {
+            try
+            {
+                var isCodeSku = await _ProductRepo.IsProductExsits(null, codeSKU, false);
+                if (codeSKU == null || codeSKU == "")
+                {
+                    return BadRequest(new ResDto<string>
+                    {
+                        Message = Constants.CODE_SKU_PRODUCT_REQUIRED,
+                        Success = false
+                    });
+                }
+                if (!isCodeSku)
+                {
+                    return BadRequest(new ResDto<string>
+                    {
+                        Message = Constants.CODE_SKU_PRODUCT_NOT_EXISTS,
+                        Success = false
+                    });
+                }
 
                 return Ok(new ResDto<string>
                 {
