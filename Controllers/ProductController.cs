@@ -160,7 +160,10 @@ namespace EShopBE.controllers
             // productModel.CodeSKU = await _skuService.GenerateSkuAsync(product.Name);
             try
             {
-                // var isCheck = await _ProductRepo.IsProductExsits(Product.);
+                var listSku = Product.Products.Select(p => p.CodeSKU);
+                var listSkuComplete = listSku.Append(Product.CodeSKU);
+                var isCheck = await _ProductRepo.IsListSKus(listSkuComplete);
+                var isDuplicateListSku = await _ProductRepo.IsDuplicateListSku(listSkuComplete);
                 if (Product.CodeSKU == null)
                 {
                     return BadRequest(new ResDto<string>
@@ -170,15 +173,23 @@ namespace EShopBE.controllers
                     });
 
                 }
-                // if (isCheck)
-                // {
-                //     return BadRequest(new ResDto<string>
-                //     {
-                //         Message = Constants.CODE_SKU_PRODUCT_EXISTS,
-                //         Success = false
-                //     });
+                if (!isCheck)
+                {
+                    return BadRequest(new ResDto<string>
+                    {
+                        Message = Constants.CODE_SKU_PRODUCT_EXISTS,
+                        Success = false
+                    });
 
-                // }
+                }
+                if (!isDuplicateListSku)
+                {
+                    return StatusCode(409, new ResDto<string>
+                    {
+                        Message = Constants.CODE_SKU_PRODUCT_DUPLICATE,
+                        Success = false
+                    });
+                }
                 await _ProductRepo.AddProductRangeAsync(Request, Product);
                 return Ok(new ResDto<string>
                 {
@@ -273,6 +284,11 @@ namespace EShopBE.controllers
             try
             {
 
+                var listSku = updateProductBody.ListSkuUpdate.Products.Select(p => p.CodeSKU);
+                var listSkuComplete = listSku.Append(updateProductBody.ListSkuUpdate.CodeSKU);
+                var isDuplicateListSku = await _ProductRepo.IsDuplicateListSku(listSkuComplete);
+                Console.WriteLine("check " + string.Join(", ", listSkuComplete.Select(p => $"{p}")));
+
                 if (updateProductBody.ListSkuUpdate == null || updateProductBody.ListSkuUpdate.CodeSKU == null || updateProductBody.ListSkuUpdate.CodeSKU == "")
                 {
                     return BadRequest(new ResDto<string>
@@ -289,6 +305,17 @@ namespace EShopBE.controllers
                         Success = false
                     });
                 }
+                if (!isDuplicateListSku)
+                {
+                    return BadRequest(new ResDto<string>
+                    {
+                        Message = Constants.CODE_SKU_PRODUCT_DUPLICATE,
+                        Success = false
+                    });
+                }
+
+                // var isCheck = await _ProductRepo.IsListSKus();
+
                 var listDelete = updateProductBody.ListSKUsDelete != null ? updateProductBody.ListSKUsDelete : [];
                 await _ProductRepo.UpdateProductRangeAsync(Request, updateProductBody.ListSkuUpdate, listDelete);
 
