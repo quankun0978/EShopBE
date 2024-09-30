@@ -86,7 +86,6 @@ namespace EShopBE.controllers
             }
         }
 
-        //
 
         [HttpPost]
         [Route("list_generate_SKU_update")]
@@ -156,8 +155,6 @@ namespace EShopBE.controllers
         [Route("add")]
         public async Task<IActionResult> AddProduct([FromBody] CreateProductRequest Product)
         {
-            // if (!ModelState.IsValid) return BadRequest(ModelState);
-            // productModel.CodeSKU = await _skuService.GenerateSkuAsync(product.Name);
             try
             {
                 var listSku = Product.Products.Select(p => p.CodeSKU);
@@ -216,7 +213,6 @@ namespace EShopBE.controllers
             try
             {
                 var isCheck = await _ProductRepo.IsListIds(listIds);
-
                 if (!isCheck)
                 {
                     return BadRequest(new ResDto<string>
@@ -284,11 +280,6 @@ namespace EShopBE.controllers
             try
             {
 
-                var listSku = updateProductBody.ListSkuUpdate.Products.Select(p => p.CodeSKU);
-                var listSkuComplete = listSku.Append(updateProductBody.ListSkuUpdate.CodeSKU);
-                var isDuplicateListSku = await _ProductRepo.IsDuplicateListSku(listSkuComplete);
-                Console.WriteLine("check " + string.Join(", ", listSkuComplete.Select(p => $"{p}")));
-
                 if (updateProductBody.ListSkuUpdate == null || updateProductBody.ListSkuUpdate.CodeSKU == null || updateProductBody.ListSkuUpdate.CodeSKU == "")
                 {
                     return BadRequest(new ResDto<string>
@@ -297,6 +288,9 @@ namespace EShopBE.controllers
                         Success = false
                     });
                 }
+                var listSku = updateProductBody.ListSkuUpdate.Products.Select(p => p.CodeSKU);
+                var listSkuComplete = listSku.Append(updateProductBody.ListSkuUpdate.CodeSKU);
+                var isDuplicateListSku = await _ProductRepo.IsDuplicateListSku(listSkuComplete);
                 if (!await _ProductRepo.IsProductExsits(updateProductBody.ListSkuUpdate.Id, null, true))
                 {
                     return BadRequest(new ResDto<string>

@@ -63,7 +63,6 @@ namespace EShopBE.models
         [Column("imageUrl", TypeName = "text")]
         public string? ImageUrl { get; set; }
 
-
         public List<Product>? Products;
     }
 }

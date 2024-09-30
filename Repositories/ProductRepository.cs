@@ -8,6 +8,7 @@ using EShopBE.interfaces;
 using EShopBE.models;
 using Microsoft.EntityFrameworkCore;
 using EShopBE.Resource.Constants;
+using EShopBE.models.Mapper;
 
 namespace EShopBE.repositories
 {
@@ -15,18 +16,24 @@ namespace EShopBE.repositories
     {
         private readonly ApplicationDBContext _context;
         private readonly IUploadFileService _uploadFileService;
-        // khoi tao
+
+        // khởi tạo
+
         public ProductRepository(ApplicationDBContext context, IUploadFileService uploadFileService)
         {
             _context = context;
             _uploadFileService = uploadFileService;
         }
+
         // xử lý đưa ra mã code mới bằng việc lấy ra các chữ cái đầu của tên sản phẩm
+
         public string GenCode(string code)
         {
             return code != null ? string.Concat(code.Split(' ').Where(n => !string.IsNullOrWhiteSpace(n)).Select(w => char.ToUpper(w[0]))) : "";
         }
+
         //xử lý thêm mới sản phẩm
+
         public async Task AddProductRangeAsync(HttpRequest request, CreateProductRequest Product)
         {
             var ImageUrl = "";
@@ -55,34 +62,37 @@ namespace EShopBE.repositories
                 Description = Product.Description
             };
             await AddProductAsync(ProductParent);
-            var productModel = await _context.Products.FirstOrDefaultAsync(p => p.CodeSKU == ProductParent.CodeSKU);
+            var productModel = await GetProductByIdOrCodeSKu(0, ProductParent.CodeSKU);
             // var listSKUGenerate = await GenerateListSkuAsync(colors, productModel.CodeSKU);
+            if (productModel != null)
+            {
 
-            var productModels = Product.Products.Select((s, index) =>
-                     {
-                         return new Product
+                var productModels = Product.Products.Select((s, index) =>
                          {
-                             CodeSKU = s.CodeSKU,
-                             Name = s.Name,
-                             Barcode = s.Barcode,
-                             Color = s.Color,
-                             Group = s.Group,
-                             IsHide = s.IsHide,
-                             ManagerBy = s.ManagerBy,
-                             Price = s.Price,
-                             Sell = s.Sell,
-                             Status = s.Status,
-                             Type = s.Type,
-                             Unit = s.Unit,
-                             ImageUrl = ImageUrl,
-                             IsParent = s.IsParent,
-                             ParentId = productModel.Id,
-                             Description = s.Description
-                         };
-                     }
-                     );
-            await _context.Products.AddRangeAsync(productModels);
-            await _context.SaveChangesAsync();
+                             return new Product
+                             {
+                                 CodeSKU = s.CodeSKU,
+                                 Name = s.Name,
+                                 Barcode = s.Barcode,
+                                 Color = s.Color,
+                                 Group = s.Group,
+                                 IsHide = s.IsHide,
+                                 ManagerBy = s.ManagerBy,
+                                 Price = s.Price,
+                                 Sell = s.Sell,
+                                 Status = s.Status,
+                                 Type = s.Type,
+                                 Unit = s.Unit,
+                                 ImageUrl = ImageUrl,
+                                 IsParent = s.IsParent,
+                                 ParentId = productModel.Id,
+                                 Description = s.Description
+                             };
+                         }
+                         );
+                await _context.Products.AddRangeAsync(productModels);
+                await _context.SaveChangesAsync();
+            }
         }
 
         // xử lý xóa sản phẩm
@@ -91,13 +101,8 @@ namespace EShopBE.repositories
         {
             if (IsParent)
             {
-                // var productsToDelete = await _context.Products
-                //         .Where(x => x.CodeSKU.Contains(x.CodeSKU))
-                //         .ToListAsync();
-                // _context.RemoveRange(productsToDelete);
                 foreach (var item in listIds)
                 {
-
                     var productsToDelete = await _context.Products
                        .Where(x => x.ParentId == item || x.Id == item)
                        .ToListAsync();
@@ -106,6 +111,7 @@ namespace EShopBE.repositories
             }
             else
             {
+
                 var productsToDelete = await _context.Products
                    .Where(x => listIds.Contains(x.Id))
                    .ToListAsync();
@@ -132,9 +138,10 @@ namespace EShopBE.repositories
                  .Where(d => d.CodeSKU != null && d.CodeSKU.Contains(codeSKU + "-") && !d.CodeSKU.Equals(codeSKU))
                  .Select(d => d.CodeSKU)
                  .ToListAsync();
-            var maxId = listSKUParent.Count() > 0
-            ? listSKUParent.Select(k => k != null ? GetNumber(k.Split("-")[1]) : 0).Max()
-            : 0;
+            // var maxId = listSKUParent.Count() > 0
+            // ? listSKUParent.Select(k => k != null ? GetNumber(k.Split("-")[1]) : 0).Max()
+            // : 0;
+            var maxId = GetMaxId("", new List<Product> { }, listSKUParent);
             var listNewSkuTasks = colors.Select((c, index) =>
             {
                 return codeSKU + "-" + GenCode(c) + (maxId + index + 1).ToString();
@@ -151,31 +158,34 @@ namespace EShopBE.repositories
             var productModel = await GetProductsByCodeSKUAsync(id);
             var listCodeColor = colors.Select(c => GenCode(c));
             // var ProductModel = await _context.Products.FindAsync(id);
-
-            var listSKUParent = await _context.Products
-                .Where(d => d.CodeSKU != null && d.Color != null && d.CodeSKU.Contains(productModel.Data.CodeSKU + "-") && !d.CodeSKU.Equals(productModel.Data.CodeSKU) && colors.Contains(d.Color))
-                .Select(d => d.CodeSKU)
-                .ToListAsync();
-
-            var listColorCurrent = await _context.Products
-                 .Where(d => d.CodeSKU != null && d.CodeSKU.Contains(productModel.Data.CodeSKU) && !d.CodeSKU.Equals(productModel.Data.CodeSKU)).Select(s => s.Color)
-                 .ToListAsync();
-
-            var listColorNotExists = listColorCurrent.Count() > 0 ? colors.Where(c => listColorCurrent.Any(s => !listColorCurrent.Contains(c))).Select(c => c).ToList() : colors;
-
-            var lisColorComplete = listColorNotExists.Count() > 0 ? listColorNotExists : [];
-
-            // Console.WriteLine("check " + string.Join(", ", lisColorComplete.Select(p => $"{p}")));
-            if (lisColorComplete != null && lisColorComplete.Count() > 0)
+            if (productModel.Data != null && productModel.Data.CodeSKU != null)
             {
-                var listSKUNew = await GenerateListSkuAsync(lisColorComplete, productModel.Data.CodeSKU);
-                if (listSKUNew != null && listSKUNew != null)
+                var listSKUParent = await _context.Products
+                              .Where(d => d.CodeSKU != null && d.Color != null && d.CodeSKU.Contains(productModel.Data.CodeSKU + "-") && !d.CodeSKU.Equals(productModel.Data.CodeSKU) && colors.Contains(d.Color))
+                              .Select(d => d.CodeSKU)
+                              .ToListAsync();
+
+                var listColorCurrent = await _context.Products
+                     .Where(d => d.CodeSKU != null && d.CodeSKU.Contains(productModel.Data.CodeSKU) && !d.CodeSKU.Equals(productModel.Data.CodeSKU)).Select(s => s.Color)
+                     .ToListAsync();
+
+                var listColorNotExists = listColorCurrent.Count() > 0 ? colors.Where(c => listColorCurrent.Any(s => !listColorCurrent.Contains(c))).Select(c => c).ToList() : colors;
+
+                var lisColorComplete = listColorNotExists.Count() > 0 ? listColorNotExists : [];
+
+                // Console.WriteLine("check " + string.Join(", ", lisColorComplete.Select(p => $"{p}")));
+                if (lisColorComplete != null && lisColorComplete.Count() > 0)
                 {
-                    string?[] mergedArray = listSKUParent.Concat(listSKUNew).ToArray();
-                    return mergedArray.ToList();
+                    var listSKUNew = await GenerateListSkuAsync(lisColorComplete, productModel.Data.CodeSKU);
+                    if (listSKUNew != null)
+                    {
+                        string?[] mergedArray = listSKUParent.Concat(listSKUNew).ToArray();
+                        return mergedArray.ToList();
+                    }
                 }
+                return listSKUParent;
             }
-            return listSKUParent;
+            return [];
         }
 
         // xử lý generate mã sku từ tên
@@ -184,11 +194,7 @@ namespace EShopBE.repositories
         {
             var productsWithSameInitials = await GetProductsByInitialsAsync(GenCode(name));
 
-            var maxId = productsWithSameInitials.Any() ? productsWithSameInitials
-       .Where(p => p.CodeSKU != null && p.CodeSKU.Length > GenCode(name).Length) // Lọc những CodeSKU có độ dài lớn hơn initials.Length
-       .Select(p => p.CodeSKU != null ? int.Parse(p.CodeSKU.Substring(GenCode(name).Length)) : 0) // Lấy phần số sau initials
-       .DefaultIfEmpty(0) // Trả về 0 nếu không có phần tử nào
-       .Max() : 0; // Lấy giá trị lớn nhất  
+            var maxId = GetMaxId(name, productsWithSameInitials, new List<string?> { });
 
             var newSku = $"{GenCode(name)}{maxId + 1}";
             return newSku;
@@ -255,8 +261,7 @@ namespace EShopBE.repositories
 
         public async Task<ResProductDto<Product>> GetProductsByCodeSKUAsync(int id)
         {
-            var dataByCodeSKU = await _context.Products
-                .FirstOrDefaultAsync(Product => Product.Id == id);
+            var dataByCodeSKU = await GetProductByIdOrCodeSKu(id, null);
             if (dataByCodeSKU == null)
             {
                 return new ResProductDto<Product>
@@ -289,7 +294,6 @@ namespace EShopBE.repositories
         public async Task<bool> IsListIds(IEnumerable<int> ListIds)
         {
             return await _context.Products.AnyAsync(s => ListIds.Contains(s.Id));
-
         }
 
         public async Task<bool> IsListSKus(IEnumerable<string?> ListSku)
@@ -298,7 +302,7 @@ namespace EShopBE.repositories
             {
                 foreach (var item in ListSku)
                 {
-                    var existingProduct = await _context.Products.FirstOrDefaultAsync(p => p.CodeSKU == item);
+                    var existingProduct = await GetProductByIdOrCodeSKu(0, item);
                     if (existingProduct != null) return false;
                 }
             }
@@ -323,6 +327,7 @@ namespace EShopBE.repositories
             var productModel = await _context.Products.FindAsync(Product.Id);
             if (productModel != null)
             {
+                productModel.CodeSKU = Product.CodeSKU;
                 productModel.Name = Product.Name;
                 productModel.Barcode = Product.Barcode;
                 productModel.Color = Product.Color;
@@ -355,32 +360,33 @@ namespace EShopBE.repositories
                 var isDelete = ImageUrl != null ? _uploadFileService.DeleteImage(request, ImageUrl, "Products") : false;
                 ImageUrl = await _uploadFileService.UploadImage(request, Product.Image, "Products");
             }
-            var ProductParent = new Product
-            {
-                Id = Product.Id,
-                CodeSKU = Product.CodeSKU,
-                Name = Product.Name,
-                Barcode = Product.Barcode,
-                Color = Product.Color,
-                Group = Product.Group,
-                IsHide = Product.IsHide,
-                ManagerBy = Product.ManagerBy,
-                Price = Product.Price,
-                Sell = Product.Sell,
-                Status = Product.Status,
-                Type = Product.Type,
-                Unit = Product.Unit,
-                ImageUrl = ImageUrl,
-                IsParent = 1,
-                Description = Product.Description
-            };
+            var ProductParent = ProductMapper.MapToEntity(Product, Product.Id, ImageUrl);
+
+            // var ProductParent = new Product
+            // {
+            //     Id = Product.Id,
+            //     CodeSKU = Product.CodeSKU,
+            //     Name = Product.Name,
+            //     Barcode = Product.Barcode,
+            //     Color = Product.Color,
+            //     Group = Product.Group,
+            //     IsHide = Product.IsHide,
+            //     ManagerBy = Product.ManagerBy,
+            //     Price = Product.Price,
+            //     Sell = Product.Sell,
+            //     Status = Product.Status,
+            //     Type = Product.Type,
+            //     Unit = Product.Unit,
+            //     ImageUrl = ImageUrl,
+            //     IsParent = 1,
+            //     Description = Product.Description
+            // };
             if (Product.IsParent == 0)
             {
                 await UpdateProductsAsync(ProductParent);
             }
             else
             {
-
                 Product.Products.Add(ProductParent);
                 if (Product.Products.Count() > 0)
                 {
@@ -389,25 +395,22 @@ namespace EShopBE.repositories
                   .Select(d => d.CodeSKU)
                   .ToListAsync();
                     var index = 0;
-                    var maxId = listSKUParent.Count() > 0
-              ? listSKUParent.Select(k => k != null ? GetNumber(k.Split("-")[1]) : 0).Max()
-              : 0;
+                    var maxId = GetMaxId("", new List<Product> { }, listSKUParent);
                     if (listIds.Count() > 0)
                     {
                         await DeleteProductAsync(listIds, false);
                     }
                     foreach (var updateRequest in Product.Products)
                     {
-                        var existingProduct = await _context.Products.FirstOrDefaultAsync(p => p.Id == updateRequest.Id);
+                        var existingProduct = await GetProductByIdOrCodeSKu(0, updateRequest.CodeSKU);
                         if (existingProduct != null)
                         {
                             // Update existing product with new values
                             // existingProduct.CodeSKU = existingProduct.CodeSKU != null ? ProductParentModel != null ? ProductParentModel.CodeSKU != null ? existingProduct.CodeSKU.Replace(ProductParentModel.CodeSKU, Product.CodeSKU) : existingProduct.CodeSKU : existingProduct.CodeSKU : existingProduct.CodeSKU;
-
                             if (existingProduct.CodeSKU != null)
                             {
                                 var isCodeSku = await IsProductExsits(null, updateRequest.CodeSKU, false);
-                                if (!isCodeSku)
+                                if (isCodeSku)
                                 {
                                     existingProduct.CodeSKU = updateRequest.CodeSKU;
                                 }
@@ -424,7 +427,38 @@ namespace EShopBE.repositories
                                 existingProduct.Sell = updateRequest.Sell;
                                 // }
                             }
-                            // Example property update
+                            else
+                            {
+                                updateRequest.Color = updateRequest.Color != null ? updateRequest.Color : "";
+                                var isCodeSku = await IsProductExsits(null, updateRequest.CodeSKU, false);
+                                if (!isCodeSku)
+                                {
+                                    // var ProductChild = new Product
+                                    // {
+                                    //     CodeSKU = updateRequest.CodeSKU,
+                                    //     Name = updateRequest.Name,
+                                    //     Barcode = updateRequest.Barcode,
+                                    //     Color = updateRequest.Color,
+                                    //     Group = updateRequest.Group,
+                                    //     IsHide = updateRequest.IsHide,
+                                    //     ManagerBy = updateRequest.ManagerBy,
+                                    //     Price = updateRequest.Price,
+                                    //     Sell = updateRequest.Sell,
+                                    //     Status = updateRequest.Status,
+                                    //     Type = updateRequest.Type,
+                                    //     Unit = updateRequest.Unit,
+                                    //     ParentId = ProductParent.Id,
+                                    //     ImageUrl = ImageUrl,
+                                    //     IsParent = 1,
+                                    //     Description = Product.Description
+                                    // };
+                                    var ProductChild = ProductMapper.MapToProduct(updateRequest, Product.Id, ImageUrl);
+
+                                    await _context.Products.AddAsync(ProductChild);
+                                    index++;
+
+                                }
+                            }
                         }
                         else
                         {
@@ -432,11 +466,30 @@ namespace EShopBE.repositories
                             var isCodeSku = await IsProductExsits(null, updateRequest.CodeSKU, false);
                             if (!isCodeSku)
                             {
-                                await _context.Products.AddAsync(updateRequest);
-                                index++;
+                                // var ProductChild = new Product
+                                // {
+                                //     CodeSKU = updateRequest.CodeSKU,
+                                //     Name = updateRequest.Name,
+                                //     Barcode = updateRequest.Barcode,
+                                //     Color = updateRequest.Color,
+                                //     Group = updateRequest.Group,
+                                //     IsHide = updateRequest.IsHide,
+                                //     ManagerBy = updateRequest.ManagerBy,
+                                //     Price = updateRequest.Price,
+                                //     Sell = updateRequest.Sell,
+                                //     Status = updateRequest.Status,
+                                //     Type = updateRequest.Type,
+                                //     Unit = updateRequest.Unit,
+                                //     ImageUrl = ImageUrl,
+                                //     ParentId = Product.Id,
+                                //     IsParent = 0,
+                                //     Description = Product.Description
+                                // };
+                                var ProductChild = ProductMapper.MapToProduct(updateRequest, Product.Id, ImageUrl);
 
+                                await _context.Products.AddAsync(ProductChild);
+                                index++;
                             }
-                            // updateRequest.CodeSKU = Product.CodeSKU + "-" + GenCode(updateRequest.Color) + (maxId + index + 1).ToString();
                         }
                         await _context.SaveChangesAsync();
                     }
@@ -444,11 +497,15 @@ namespace EShopBE.repositories
             }
         }
 
+        // xử lý thêm mới 1 sản phẩm
+
         public async Task AddProductAsync(Product product)
         {
             await _context.Products.AddAsync(product);
             await _context.SaveChangesAsync();
         }
+
+        // xử lý kiểm tra trùng lặp
 
         public Task<bool> IsDuplicateListSku(IEnumerable<string?> listSKUs)
         {
@@ -457,6 +514,38 @@ namespace EShopBE.repositories
             .Any(group => group.Count() > 1);
 
             return Task.FromResult(!hasDuplicates); // 
+        }
+
+        // lấy ra 1 sản phẩm theo id hoặc mã sku
+
+        public Task<Product?> GetProductByIdOrCodeSKu(int id, string? codeSKU)
+        {
+            if (codeSKU != null)
+            {
+                return _context.Products.FirstOrDefaultAsync(p => p.CodeSKU == codeSKU);
+            }
+            return _context.Products.FirstOrDefaultAsync(p => p.Id == id);
+        }
+
+        // lấy ra id lớn nhất
+
+        public int GetMaxId(string name, List<Product> Products, List<string?> listSKUParent)
+        {
+            if (Products.Any())
+            {
+                var maxId = Products
+  .Where(p => p.CodeSKU != null && p.CodeSKU.Length > GenCode(name).Length) // Lọc những CodeSKU có độ dài lớn hơn initials.Length
+  .Select(p => p.CodeSKU != null ? int.Parse(p.CodeSKU.Substring(GenCode(name).Length)) : 0) // Lấy phần số sau initials
+  .DefaultIfEmpty(0) // Trả về 0 nếu không có phần tử nào
+  .Max(); // Lấy giá trị lớn nhất 
+                return maxId;
+            }
+            else if (listSKUParent != null && listSKUParent.Count() > 0)
+            {
+                var maxId = listSKUParent.Select(k => k != null ? GetNumber(k.Split("-")[1]) : 0).Max();
+                return maxId;
+            }
+            return 0;
         }
     }
 }
