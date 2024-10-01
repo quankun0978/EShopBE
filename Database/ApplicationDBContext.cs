@@ -10,6 +10,13 @@ namespace EShopBE.Database
 : base(options)
         {
         }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            // Tắt logging SQL
+            optionsBuilder
+                .UseLoggerFactory(null)  // Tắt logging
+                .EnableSensitiveDataLogging(false); // Tắt logging nhạy cảm
+        }
         public DbSet<Product> Products { get; set; }
     }
 }

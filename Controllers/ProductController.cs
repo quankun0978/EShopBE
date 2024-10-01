@@ -93,15 +93,7 @@ namespace EShopBE.controllers
         {
             try
             {
-                if (payload.CodeSKUParent == null)
-                {
-                    return BadRequest(new ResDto<string>
-                    {
-                        Message = Constants.CODE_SKU_PRODUCT_REQUIRED,
-                        Success = false,
-                        Data = null
-                    });
-                }
+
                 if (await _ProductRepo.IsProductExsits(payload.Id, null, true) == false)
                 {
                     return BadRequest(new ResDto<string>
@@ -111,7 +103,17 @@ namespace EShopBE.controllers
                         Data = null
                     });
                 }
-                var codeSKU = await _ProductRepo.GenerateListSkuUpdateAsync(payload.Colors, payload.Id);
+                //  if (await _ProductRepo.IsProductExsits(payload.Id, null, true) == false)
+                // {
+                //     return BadRequest(new ResDto<string>
+                //     {
+                //         Message = Constants.CODE_SKU_PRODUCT_NOT_EXISTS,
+                //         Success = false,
+                //         Data = null
+                //     });
+                // }
+
+                var codeSKU = await _ProductRepo.GenerateListSkuUpdateAsync(payload.Colors, payload.Id, payload.ListIdDelete);
                 return Ok(new ResDto<List<string?>>
                 {
                     Message = Constants.SUCCESS,
@@ -245,7 +247,7 @@ namespace EShopBE.controllers
         {
             try
             {
-                var data = await _ProductRepo.GetProductsByCodeSKUAsync(id);
+                var data = await _ProductRepo.GetProductsByIdAsync(id);
                 if (!await _ProductRepo.IsProductExsits(id, null, true))
                 {
                     return BadRequest(new ResDto<string>
@@ -311,6 +313,7 @@ namespace EShopBE.controllers
                 // var isCheck = await _ProductRepo.IsListSKus();
 
                 var listDelete = updateProductBody.ListSKUsDelete != null ? updateProductBody.ListSKUsDelete : [];
+
                 await _ProductRepo.UpdateProductRangeAsync(Request, updateProductBody.ListSkuUpdate, listDelete);
 
                 return Ok(new ResDto<string>

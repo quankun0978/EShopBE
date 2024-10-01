@@ -38,7 +38,7 @@ public static class ProductMapper
             Description = productDto.Description
         };
     }
-    public static Product MapToEntity(UpdateProductRequest productDto, int id, string? ImageUrl)
+    public static Product MapToEntity(UpdateProductRequest productDto, int id, string? ImageUrlString)
     {
 
         return new Product
@@ -55,7 +55,7 @@ public static class ProductMapper
             Status = productDto.Status,
             Type = productDto.Type,
             Unit = productDto.Unit,
-            ImageUrl = ImageUrl,
+            ImageUrl = ImageUrlString,
             IsParent = productDto.IsParent,
             ParentId = id,
             Description = productDto.Description

@@ -6,6 +6,7 @@ namespace EShopBE.Dtos.Product
     {
         public List<string> Colors { get; set; } = new List<string> { };
         public string CodeSKUParent { get; set; } = string.Empty;
+        public List<int> ListIdDelete { get; set; } = new List<int> { };
         public int Id { get; set; }
     }
 }
