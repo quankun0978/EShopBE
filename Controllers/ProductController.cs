@@ -103,15 +103,7 @@ namespace EShopBE.controllers
                         Data = null
                     });
                 }
-                //  if (await _ProductRepo.IsProductExsits(payload.Id, null, true) == false)
-                // {
-                //     return BadRequest(new ResDto<string>
-                //     {
-                //         Message = Constants.CODE_SKU_PRODUCT_NOT_EXISTS,
-                //         Success = false,
-                //         Data = null
-                //     });
-                // }
+
 
                 var codeSKU = await _ProductRepo.GenerateListSkuUpdateAsync(payload.Colors, payload.Id, payload.ListIdDelete);
                 return Ok(new ResDto<List<string?>>

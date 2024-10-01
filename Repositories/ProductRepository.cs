@@ -73,7 +73,6 @@ namespace EShopBE.repositories
                 var productsToDelete = await _context.Products
                    .Where(x => listIds.Contains(x.Id))
                    .ToListAsync();
-                Console.WriteLine("check " + string.Join(", ", productsToDelete.Select(p => $"{p.CodeSKU}")));
                 _context.Products.RemoveRange(productsToDelete);
             }
             await _context.SaveChangesAsync();
@@ -97,10 +96,7 @@ namespace EShopBE.repositories
                  .Where(d => d.CodeSKU != null && d.CodeSKU.Contains(codeSKU + "-") && !d.CodeSKU.Equals(codeSKU))
                  .Select(d => d.CodeSKU)
                  .ToListAsync();
-            // var maxId = listSKUParent.Count() > 0
-            // ? listSKUParent.Select(k => k != null ? GetNumber(k.Split("-")[1]) : 0).Max()
-            // : 0;
-            // var listSKUParent = await GetListSkuParent(-1);
+
             var maxId = GetMaxId("", new List<Product> { }, listSKUParent);
             var listNewSkuTasks = colors.Select((c, index) =>
             {
@@ -116,19 +112,13 @@ namespace EShopBE.repositories
         public async Task<List<string?>> GenerateListSkuUpdateAsync(List<string> colors, int id, List<int> listIdDelete)
         {
             var productModel = await GetProductsByIdAsync(id);
-            // var ProductModel = await _context.Products.FindAsync(id);
             if (productModel.Data != null && productModel.Data.CodeSKU != null)
             {
-                // var listSKUParent = await _context.Products
-                //               .Where(d => d.CodeSKU != null && d.Color != null && d.CodeSKU.Contains(productModel.Data.CodeSKU + "-") && !d.CodeSKU.Equals(productModel.Data.CodeSKU) && colors.Contains(d.Color))
-                //               .Select(d => d.CodeSKU)
-                //               .ToListAsync();
+
                 var listProducts = await GetListSkuParent(id, listIdDelete);
 
                 var listSKUParent = listProducts.Where(P => P.Color != null && colors.Contains(P.Color)).Select(p => p.CodeSKU).ToList();
-                // var listColorCurrent = await _context.Products
-                //      .Where(d => d.CodeSKU != null && d.CodeSKU.Contains(productModel.Data.CodeSKU) && !d.CodeSKU.Equals(productModel.Data.CodeSKU)).Select(s => s.Color)
-                //      .ToListAsync();
+
 
                 var lisColorModel = listProducts.Select(p => p.Color).ToList();
 
@@ -288,19 +278,6 @@ namespace EShopBE.repositories
             var productModel = await _context.Products.FindAsync(Product.Id);
             if (productModel != null)
             {
-                // productModel.CodeSKU = Product.CodeSKU;
-                // productModel.Name = Product.Name;
-                // productModel.Barcode = Product.Barcode;
-                // productModel.Color = Product.Color;
-                // productModel.Unit = Product.Unit;
-                // productModel.Description = Product.Description;
-                // productModel.Group = Product.Group;
-                // productModel.ImageUrl = Product.ImageUrl;
-                // productModel.IsHide = Product.IsHide;
-                // productModel.Status = Product.Status;
-                // productModel.Price = Product.Price;
-                // productModel.Sell = Product.Sell;
-                // await _context.SaveChangesAsync();
 
                 productModel.CodeSKU = Product.CodeSKU;
                 productModel.Name = Product.Name;
@@ -337,42 +314,14 @@ namespace EShopBE.repositories
             }
             var ProductParent = ProductMapper.MapToEntity(Product, Product.Id, ImageUrl);
 
-            // var ProductParent = new Product
-            // {
-            //     Id = Product.Id,
-            //     CodeSKU = Product.CodeSKU,
-            //     Name = Product.Name,
-            //     Barcode = Product.Barcode,
-            //     Color = Product.Color,
-            //     Group = Product.Group,
-            //     IsHide = Product.IsHide,
-            //     ManagerBy = Product.ManagerBy,
-            //     Price = Product.Price,
-            //     Sell = Product.Sell,
-            //     Status = Product.Status,
-            //     Type = Product.Type,
-            //     Unit = Product.Unit,
-            //     ImageUrl = ImageUrl,
-            //     IsParent = 1,
-            //     Description = Product.Description
-            // };
-            // if (Product.IsParent == 0)
-            // {
-            //     await UpdateProductsAsync(ProductParent);
-            // }
-            // else
-            // {
+
             Product.Products.Add(ProductParent);
             if (Product.Products.Count() > 0)
             {
-                //     var listSKUParent = await _context.Products
-                //   .Where(d => d.CodeSKU != null && d.CodeSKU.Contains(Product.CodeSKU) && !d.CodeSKU.Equals(Product.CodeSKU))
-                //   .Select(d => d.CodeSKU)
-                //   .ToListAsync();
                 var listProducts = await GetListSkuParent(Product.Id, new List<int> { });
                 var listSKUParent = listProducts.Select(p => p.CodeSKU).ToList();
                 var index = 0;
-                var maxId = GetMaxId("", new List<Product> { }, listSKUParent);
+                // var maxId = GetMaxId("", new List<Product> { }, listSKUParent);
                 if (listIds.Count() > 0)
                 {
                     await DeleteProductAsync(listIds, false);
@@ -382,11 +331,9 @@ namespace EShopBE.repositories
                     var existingProduct = await GetProductByIdOrCodeSKu(0, updateRequest.CodeSKU);
                     if (existingProduct != null)
                     {
-                        // Update existing product with new values
-                        // existingProduct.CodeSKU = existingProduct.CodeSKU != null ? ProductParentModel != null ? ProductParentModel.CodeSKU != null ? existingProduct.CodeSKU.Replace(ProductParentModel.CodeSKU, Product.CodeSKU) : existingProduct.CodeSKU : existingProduct.CodeSKU : existingProduct.CodeSKU;
+
                         if (existingProduct.CodeSKU != null)
                         {
-                            // await UpdateProductsAsync(updateRequest);
                             var isCodeSku = await IsProductExsits(null, updateRequest.CodeSKU, false);
                             if (isCodeSku)
                             {
@@ -494,22 +441,8 @@ namespace EShopBE.repositories
 
         public async Task<List<Product>> GetListSkuParent(int id, List<int> listIdDelete)
         {
-            Console.WriteLine("check " + string.Join(", ", listIdDelete.Select(p => $"{p}")));
 
             var listSKUParent = await _context.Products.Where(P => P.ParentId == id && !listIdDelete.Contains(P.Id)).ToListAsync();
-            // if (colors != null && colors.Count() > 0)
-            // {
-            //     var listSKUParentByColor = await _context.Products
-            //                                    .Where(d => d.CodeSKU != null && d.Color != null && d.CodeSKU.Contains(codeSKU + "-") && !d.CodeSKU.Equals(codeSKU) && colors.Contains(d.Color))
-            //                                    .Select(d => d.CodeSKU)
-            //                                    .ToListAsync();
-            //     return listSKUParentByColor;
-            // }
-
-            // var listSKUParent = await _context.Products
-            //      .Where(d => d.CodeSKU != null && d.CodeSKU.Contains(codeSKU + "-") && !d.CodeSKU.Equals(codeSKU))
-            //      .Select(d => d.CodeSKU)
-            //      .ToListAsync();
 
             return listSKUParent;
 
