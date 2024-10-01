@@ -61,4 +61,47 @@ public static class ProductMapper
             Description = productDto.Description
         };
     }
+    public static Product ToStockFromCreateDTO(CreateProductRequest productDto, int id, string? ImageUrl, int IsParent)
+    {
+        if (IsParent == 1)
+        {
+            return new Product
+            {
+                CodeSKU = productDto.CodeSKU,
+                Name = productDto.Name,
+                Barcode = productDto.Barcode,
+                Color = productDto.Color,
+                Group = productDto.Group,
+                IsHide = productDto.IsHide,
+                ManagerBy = productDto.ManagerBy,
+                Price = productDto.Price,
+                Sell = productDto.Sell,
+                Status = productDto.Status,
+                Type = productDto.Type,
+                Unit = productDto.Unit,
+                ImageUrl = ImageUrl,
+                IsParent = IsParent,
+                Description = productDto.Description
+            };
+        }
+        return new Product
+        {
+            CodeSKU = productDto.CodeSKU,
+            Name = productDto.Name,
+            Barcode = productDto.Barcode,
+            Color = productDto.Color,
+            Group = productDto.Group,
+            IsHide = productDto.IsHide,
+            ManagerBy = productDto.ManagerBy,
+            Price = productDto.Price,
+            Sell = productDto.Sell,
+            Status = productDto.Status,
+            Type = productDto.Type,
+            Unit = productDto.Unit,
+            ImageUrl = ImageUrl,
+            IsParent = IsParent,
+            ParentId = id,
+            Description = productDto.Description
+        };
+    }
 }
