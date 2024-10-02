@@ -197,15 +197,19 @@ namespace EShopBE.repositories
                     Data = null
                 };
             }
-            var data = await Products.Where(p => p.IsParent == 1).Skip(skipNumber).Take(ProductQuery.PageSize).ToListAsync();
-            return new ResPaginateProductDto<Product>
-            {
-                TotalPage = totalPage,
-                CurrentPage = ProductQuery.PageNumber,
-                TotalRecord = TotalRecord,
-                PageSize = ProductQuery.PageSize,
-                Data = data
-            };
+            var data = await Products
+                .Where(p => p.IsParent == 1)
+                .OrderBy(p => p.Id)
+                .Skip(skipNumber)
+                .Take(ProductQuery.PageSize)
+                .ToListAsync(); return new ResPaginateProductDto<Product>
+                {
+                    TotalPage = totalPage,
+                    CurrentPage = ProductQuery.PageNumber,
+                    TotalRecord = TotalRecord,
+                    PageSize = ProductQuery.PageSize,
+                    Data = data
+                };
         }
 
         // xử lấy ra danh hàng hóa theo mã sku
