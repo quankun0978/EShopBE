@@ -49,11 +49,14 @@ namespace EShopBE.Services
 
         // xử lý kiểm tra xem ảnh đã tồn tại trong server chưa
 
-        public async Task<string> UploadImage(HttpRequest request, FileUploadRequest fileData, string path)
+        public async Task<ImageDto> UploadImage(HttpRequest request, FileUploadRequest fileData, string path)
         {
             if (request == null || string.IsNullOrEmpty(fileData.FileData))
             {
-                return "";
+                return new ImageDto
+                {
+
+                };
             }
 
             // Decode the Base64 string into bytes
@@ -73,7 +76,12 @@ namespace EShopBE.Services
             await System.IO.File.WriteAllBytesAsync(filePath, fileBytes);
             // Create the file URL
             var fileUrl = $"{request.Scheme}://{request.Host}/static/uploads/images/Products/{uniqueFileName}";
-            return fileUrl;
+            return new ImageDto
+            {
+                ImageUrl = fileUrl,
+                FileData = fileBytes
+
+            };
         }
     }
 }

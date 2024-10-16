@@ -63,6 +63,8 @@ namespace EShopBE.models
         [Column("imageUrl", TypeName = "text")]
         public string? ImageUrl { get; set; }
 
+        [Column("image_blob", TypeName = "blob")]
+        public byte[]? ImageBlob { get; set; }
         public List<Product>? Products;
     }
 }

@@ -35,20 +35,19 @@ namespace EShopBE.repositories
 
         public async Task AddProductRangeAsync(HttpRequest request, CreateProductRequest Product)
         {
-            var ImageUrl = "";
+            var ImageData = new ImageDto { };
             if (Product.Image != null)
             {
-                ImageUrl = await _uploadFileService.UploadImage(request, Product.Image, "Products");
+                ImageData = await _uploadFileService.UploadImage(request, Product.Image, "Products");
             }
 
-
-            var ProductParent = ProductMapper.ToStockFromCreateDTO(Product, -1, ImageUrl, 1);
+            var ProductParent = ProductMapper.ToStockFromCreateDTO(Product, -1, ImageData.ImageUrl, 1);
             await AddProductAsync(ProductParent);
             var productModel = await GetProductByIdOrCodeSKu(0, ProductParent.CodeSKU);
             // var listSKUGenerate = await GenerateListSkuAsync(colors, productModel.CodeSKU);
             if (productModel != null)
             {
-                var productModels = Product.Products.Select((s, index) => ProductMapper.MapToProduct(s, productModel.Id, ImageUrl));
+                var productModels = Product.Products.Select((s, index) => ProductMapper.MapToProduct(s, productModel.Id, ImageData.ImageUrl));
                 await _context.Products.AddRangeAsync(productModels);
                 await _context.SaveChangesAsync();
             }
@@ -314,7 +313,8 @@ namespace EShopBE.repositories
             if (isImageFile && Product.Image != null && Product.Image.FileData != null)
             {
                 var isDelete = ImageUrl != null ? _uploadFileService.DeleteImage(request, ImageUrl, "Products") : false;
-                ImageUrl = await _uploadFileService.UploadImage(request, Product.Image, "Products");
+                var ImageData = await _uploadFileService.UploadImage(request, Product.Image, "Products");
+                ImageUrl = ImageData.ImageUrl;
             }
             var ProductParent = ProductMapper.MapToEntity(Product, Product.Id, ImageUrl);
 
