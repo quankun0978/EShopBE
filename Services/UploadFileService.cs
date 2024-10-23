@@ -63,7 +63,7 @@ namespace EShopBE.Services
             var fileBytes = Convert.FromBase64String(fileData.FileData);
 
             // Generate a unique filename using GUID
-            var uniqueFileName = $"{Path.GetFileNameWithoutExtension(fileData.FileName)}_{Guid.NewGuid()}{Path.GetExtension(fileData.FileName)}";
+            var uniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(fileData.FileName)}";
 
             // Define the uploads folder path
             var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "static", "Uploads", "Images", "Products");

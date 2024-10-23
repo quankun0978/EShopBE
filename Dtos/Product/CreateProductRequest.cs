@@ -51,6 +51,8 @@ namespace EShopBE.Dtos.Product
         public string Description { get; set; } = string.Empty;
         [DefaultValue("abc.xyz")]
         public FileUploadRequest? Image { get; set; }
+        public string? ImageUrl { get; set; }
+
         public List<EShopBE.models.Product> Products { get; set; } = new List<models.Product> { };
     }
 }

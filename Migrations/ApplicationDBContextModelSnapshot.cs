@@ -50,10 +50,6 @@ namespace EShopBE.Migrations
                         .HasColumnType("text")
                         .HasColumnName("group");
 
-                    b.Property<byte[]>("ImageBlob")
-                        .HasColumnType("blob")
-                        .HasColumnName("image_blob");
-
                     b.Property<string>("ImageUrl")
                         .HasColumnType("text")
                         .HasColumnName("imageUrl");

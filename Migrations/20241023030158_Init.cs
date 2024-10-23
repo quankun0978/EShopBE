@@ -47,8 +47,7 @@ namespace EShopBE.Migrations
                     description = table.Column<string>(type: "text", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     imageUrl = table.Column<string>(type: "text", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    image_blob = table.Column<byte[]>(type: "blob", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {

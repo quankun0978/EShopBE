@@ -38,11 +38,12 @@ public static class ProductMapper
             Description = productDto.Description
         };
     }
-    public static Product MapToEntity(UpdateProductRequest productDto, int id, string? ImageUrlString)
+    public static Product MapToEntity(UpdateProductRequest productDto,int id, int parentId, string? ImageUrlString)
     {
 
         return new Product
         {
+            Id = id,
             CodeSKU = productDto.CodeSKU,
             Name = productDto.Name,
             Barcode = productDto.Barcode,
@@ -57,7 +58,7 @@ public static class ProductMapper
             Unit = productDto.Unit,
             ImageUrl = ImageUrlString,
             IsParent = productDto.IsParent,
-            ParentId = id,
+            ParentId = parentId,
             Description = productDto.Description
         };
     }

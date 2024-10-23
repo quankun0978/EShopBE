@@ -96,14 +96,13 @@ namespace EShopBE.controllers
 
                 if (await _ProductRepo.IsProductExsits(payload.Id, null, true) == false)
                 {
-                    return BadRequest(new ResDto<string>
+                    return NotFound(new ResDto<string>
                     {
                         Message = Constants.CODE_SKU_PRODUCT_NOT_EXISTS,
                         Success = false,
                         Data = null
                     });
                 }
-
 
                 var codeSKU = await _ProductRepo.GenerateListSkuUpdateAsync(payload.Colors, payload.Id, payload.ListIdDelete);
                 return Ok(new ResDto<List<string?>>
@@ -155,6 +154,8 @@ namespace EShopBE.controllers
                 var listSkuComplete = listSku.Append(Product.CodeSKU);
                 var isCheck = await _ProductRepo.IsListSKus(listSkuComplete);
                 var isDuplicateListSku = await _ProductRepo.IsDuplicateListSku(listSkuComplete);
+                var isListBarcodeExsist = await _ProductRepo.IsListBarcodes(Product.Products, true);
+
                 if (Product.CodeSKU == null)
                 {
                     return BadRequest(new ResDto<string>
@@ -164,7 +165,7 @@ namespace EShopBE.controllers
                     });
 
                 }
-                if (!isCheck)
+                else if (!isCheck)
                 {
                     return BadRequest(new ResDto<string>
                     {
@@ -173,11 +174,20 @@ namespace EShopBE.controllers
                     });
 
                 }
-                if (!isDuplicateListSku)
+                else if (!isDuplicateListSku)
                 {
-                    return StatusCode(409, new ResDto<string>
+                    return BadRequest(new ResDto<string>
                     {
                         Message = Constants.CODE_SKU_PRODUCT_DUPLICATE,
+                        Success = false
+                    });
+                }
+                else if (!isListBarcodeExsist)
+                {
+
+                    return BadRequest(new ResDto<string>
+                    {
+                        Message = Constants.BARCODE_PRODUCT_EXISTS,
                         Success = false
                     });
                 }
@@ -202,14 +212,13 @@ namespace EShopBE.controllers
         [Route("delete")]
         public async Task<IActionResult> DeleteProduct([FromBody] IEnumerable<int> listIds)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
             // productModel.CodeSKU = await _skuService.GenerateSkuAsync(product.Name);
             try
             {
                 var isCheck = await _ProductRepo.IsListIds(listIds);
                 if (!isCheck)
                 {
-                    return BadRequest(new ResDto<string>
+                    return NotFound(new ResDto<string>
                     {
                         Message = Constants.CODE_SKU_PRODUCT_NOT_EXISTS,
                         Success = false
@@ -242,7 +251,7 @@ namespace EShopBE.controllers
                 var data = await _ProductRepo.GetProductsByIdAsync(id);
                 if (!await _ProductRepo.IsProductExsits(id, null, true))
                 {
-                    return BadRequest(new ResDto<string>
+                    return NotFound(new ResDto<string>
                     {
                         Message = Constants.CODE_SKU_PRODUCT_NOT_EXISTS,
                         Success = false
@@ -285,15 +294,31 @@ namespace EShopBE.controllers
                 var listSku = updateProductBody.ListSkuUpdate.Products.Select(p => p.CodeSKU);
                 var listSkuComplete = listSku.Append(updateProductBody.ListSkuUpdate.CodeSKU);
                 var isDuplicateListSku = await _ProductRepo.IsDuplicateListSku(listSkuComplete);
-                if (!await _ProductRepo.IsProductExsits(updateProductBody.ListSkuUpdate.Id, null, true))
+                var isProductExsist = await _ProductRepo.IsProductExsits(updateProductBody.ListSkuUpdate.Id, null, true);
+                var isCodeSkuExsist = await _ProductRepo.IsCheckCodeSkuInParent(updateProductBody.ListSkuUpdate.CodeSKU, updateProductBody.ListSkuUpdate.Id);
+                var isListCodeSkuExsist = await _ProductRepo.IsCheckListCodeSkuInParent(updateProductBody.ListSkuUpdate.Products);
+                var isListBarcodeExsist = await _ProductRepo.IsListBarcodes(updateProductBody.ListSkuUpdate.Products, false);
+                // Console.WriteLine(isListBarcodeExsist);
+                // var productById = await _ProductRepo.GetProductsByIdAsync(updateProductBody.ListSkuUpdate.Id);
+                // var productByCodeSku = await _ProductRepo.IsProductExsits(-1, updateProductBody.ListSkuUpdate.CodeSKU, false);
+                Console.WriteLine(124);
+                if (!isProductExsist)
                 {
-                    return BadRequest(new ResDto<string>
+                    return NotFound(new ResDto<string>
                     {
-                        Message = Constants.CODE_SKU_PRODUCT_NOT_EXISTS,
+                        Message = Constants.PRODUCT_NOT_EXISTS,
                         Success = false
                     });
                 }
-                if (!isDuplicateListSku)
+                else if (!isCodeSkuExsist || !isListCodeSkuExsist)
+                {
+                    return BadRequest(new ResDto<string>
+                    {
+                        Message = Constants.CODE_SKU_PRODUCT_EXISTS,
+                        Success = false
+                    });
+                }
+                else if (!isDuplicateListSku)
                 {
                     return BadRequest(new ResDto<string>
                     {
@@ -301,6 +326,18 @@ namespace EShopBE.controllers
                         Success = false
                     });
                 }
+
+                else if (!isListBarcodeExsist)
+                {
+                    Console.WriteLine(122);
+
+                    return BadRequest(new ResDto<string>
+                    {
+                        Message = Constants.BARCODE_PRODUCT_EXISTS,
+                        Success = false
+                    });
+                }
+                Console.WriteLine(123);
 
                 // var isCheck = await _ProductRepo.IsListSKus();
 
@@ -320,6 +357,7 @@ namespace EShopBE.controllers
                 return StatusCode(500, new ResDto<string> { Message = Constants.ERROR_FROM_SERVER + ex.Message, Success = false });
             }
         }
+
         [HttpPost]
         [Route("is_code_sku")]
         public async Task<IActionResult> IsCodeSkuExsist(string codeSKU)
@@ -335,9 +373,9 @@ namespace EShopBE.controllers
                         Success = false
                     });
                 }
-                if (!isCodeSku)
+                else if (!isCodeSku)
                 {
-                    return BadRequest(new ResDto<string>
+                    return NotFound(new ResDto<string>
                     {
                         Message = Constants.CODE_SKU_PRODUCT_NOT_EXISTS,
                         Success = false

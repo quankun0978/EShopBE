@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EShopBE.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20241017081417_Init")]
+    [Migration("20241023030158_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -52,10 +52,6 @@ namespace EShopBE.Migrations
                     b.Property<string>("Group")
                         .HasColumnType("text")
                         .HasColumnName("group");
-
-                    b.Property<byte[]>("ImageBlob")
-                        .HasColumnType("blob")
-                        .HasColumnName("image_blob");
 
                     b.Property<string>("ImageUrl")
                         .HasColumnType("text")
