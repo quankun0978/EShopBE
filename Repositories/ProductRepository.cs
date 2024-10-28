@@ -473,10 +473,7 @@ namespace EShopBE.repositories
 
         public async Task<bool> IsBarcodes(string Barcode, int id)
         {
-            Console.WriteLine(Barcode);
             var productById = await GetProductsByIdAsync(id);
-            Console.WriteLine(Barcode);
-
             var isBarcode = await _context.Products.AnyAsync(p => p.Barcode == Barcode);
 
             if (productById.Data != null && productById.Data.Barcode != Barcode && isBarcode)
@@ -502,11 +499,9 @@ namespace EShopBE.repositories
                 {
                     if (product != null && product.Barcode != null)
                     {
-                        Console.WriteLine(1);
                         var isCheckExsist = await IsBarcodes(product.Barcode, product.Id);
                         if (isCheckExsist)
                         {
-                            Console.WriteLine(2);
                             return false;
                         }
                     }
@@ -518,7 +513,6 @@ namespace EShopBE.repositories
             {
                 if (product != null && product.Barcode != null)
                 {
-                    Console.WriteLine(1);
                     var isCheckExsist = await IsBarcodeCreate(product.Barcode);
                     if (isCheckExsist)
                     {

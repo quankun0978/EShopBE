@@ -42,9 +42,6 @@ namespace EShopBE.Dtos.Product
 
         public long Sell { get; set; }
 
-        [DefaultValue("")]
-
-        public string Barcode { get; set; } = string.Empty;
 
         [DefaultValue("")]
 

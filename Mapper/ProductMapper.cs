@@ -38,7 +38,7 @@ public static class ProductMapper
             Description = productDto.Description
         };
     }
-    public static Product MapToEntity(UpdateProductRequest productDto,int id, int parentId, string? ImageUrlString)
+    public static Product MapToEntity(UpdateProductRequest productDto, int id, int parentId, string? ImageUrlString)
     {
 
         return new Product
@@ -46,7 +46,6 @@ public static class ProductMapper
             Id = id,
             CodeSKU = productDto.CodeSKU,
             Name = productDto.Name,
-            Barcode = productDto.Barcode,
             Color = productDto.Color,
             Group = productDto.Group,
             IsHide = productDto.IsHide,
@@ -64,13 +63,15 @@ public static class ProductMapper
     }
     public static Product ToStockFromCreateDTO(CreateProductRequest productDto, int id, string? ImageUrl, int IsParent)
     {
+        Random random = new Random();
+        int randomNumber = random.Next(100000, 1000000); // Tạo số ngẫu nhiên từ 100000 đến 999999
         if (IsParent == 1)
         {
             return new Product
             {
                 CodeSKU = productDto.CodeSKU,
                 Name = productDto.Name,
-                Barcode = productDto.Barcode,
+                Barcode = randomNumber.ToString(),
                 Color = productDto.Color,
                 Group = productDto.Group,
                 IsHide = productDto.IsHide,
@@ -89,7 +90,7 @@ public static class ProductMapper
         {
             CodeSKU = productDto.CodeSKU,
             Name = productDto.Name,
-            Barcode = productDto.Barcode,
+            Barcode = randomNumber.ToString(),
             Color = productDto.Color,
             Group = productDto.Group,
             IsHide = productDto.IsHide,

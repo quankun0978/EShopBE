@@ -29,8 +29,6 @@ namespace EShopBE.interfaces
         Task DeleteProductAsync(IEnumerable<int> listIds, bool IsParent);
         // kiểm tra xem danh sách mã có mã nào không tồn tại không
         Task<bool> IsListIds(IEnumerable<int> listIds);
-        Task<bool> IsListBarcodes(IEnumerable<Product?> listBarcodes, bool action);
-
         Task<bool> IsListSKus(IEnumerable<string?> listSKUs);
         Task<bool> IsExsistColor(IEnumerable<string?> listColors, int id);
         // kiểm tra xem sản phẩm có tồn tại không
