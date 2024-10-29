@@ -22,7 +22,6 @@ public static class ProductMapper
         {
             CodeSKU = productDto.CodeSKU,
             Name = productDto.Name,
-            Barcode = productDto.Barcode,
             Color = productDto.Color,
             Group = productDto.Group,
             IsHide = productDto.IsHide,
@@ -71,7 +70,6 @@ public static class ProductMapper
             {
                 CodeSKU = productDto.CodeSKU,
                 Name = productDto.Name,
-                Barcode = randomNumber.ToString(),
                 Color = productDto.Color,
                 Group = productDto.Group,
                 IsHide = productDto.IsHide,
@@ -90,7 +88,6 @@ public static class ProductMapper
         {
             CodeSKU = productDto.CodeSKU,
             Name = productDto.Name,
-            Barcode = randomNumber.ToString(),
             Color = productDto.Color,
             Group = productDto.Group,
             IsHide = productDto.IsHide,

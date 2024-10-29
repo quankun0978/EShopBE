@@ -16,27 +16,27 @@ namespace EShopBE.Dtos.Product
         [Required]
         public string Name { get; set; } = string.Empty;
         [DefaultValue("")]
-        public string Group { get; set; } = string.Empty;
+        public int Group { get; set; }
 
         [DefaultValue("")]
 
-        public string Unit { get; set; } = string.Empty;
+        public int Unit { get; set; }
         [DefaultValue(40000)]
 
         public long Price { get; set; }
 
         [DefaultValue("Có")]
-        public string IsHide { get; set; } = string.Empty;
+        public int IsHide { get; set; }
         [DefaultValue("")]
 
-        public string Type { get; set; } = string.Empty;
+        public int Type { get; set; }
         [DefaultValue("")]
 
-        public string ManagerBy { get; set; } = string.Empty;
+        public int ManagerBy { get; set; }
         [DefaultValue("")]
 
 
-        public string Status { get; set; } = string.Empty;
+        public int Status { get; set; }
 
         [DefaultValue(4000)]
 

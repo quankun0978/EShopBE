@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EShopBE.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20241023030158_Init")]
+    [Migration("20241029143032_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -33,10 +33,6 @@ namespace EShopBE.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Barcode")
-                        .HasColumnType("text")
-                        .HasColumnName("barcode");
-
                     b.Property<string>("CodeSKU")
                         .HasColumnType("longtext")
                         .HasColumnName("codeSKU");
@@ -49,24 +45,24 @@ namespace EShopBE.Migrations
                         .HasColumnType("text")
                         .HasColumnName("description");
 
-                    b.Property<string>("Group")
-                        .HasColumnType("text")
+                    b.Property<int>("Group")
+                        .HasColumnType("int")
                         .HasColumnName("group");
 
                     b.Property<string>("ImageUrl")
                         .HasColumnType("text")
                         .HasColumnName("imageUrl");
 
-                    b.Property<string>("IsHide")
-                        .HasColumnType("text")
+                    b.Property<ulong>("IsHide")
+                        .HasColumnType("bit")
                         .HasColumnName("isHide");
 
                     b.Property<ulong>("IsParent")
                         .HasColumnType("bit")
                         .HasColumnName("isParent");
 
-                    b.Property<string>("ManagerBy")
-                        .HasColumnType("text")
+                    b.Property<int>("ManagerBy")
+                        .HasColumnType("int")
                         .HasColumnName("manager_by");
 
                     b.Property<string>("Name")
@@ -85,16 +81,16 @@ namespace EShopBE.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("sell");
 
-                    b.Property<string>("Status")
-                        .HasColumnType("text")
+                    b.Property<int>("Status")
+                        .HasColumnType("int")
                         .HasColumnName("status");
 
-                    b.Property<string>("Type")
-                        .HasColumnType("text")
+                    b.Property<int>("Type")
+                        .HasColumnType("int")
                         .HasColumnName("type");
 
-                    b.Property<string>("Unit")
-                        .HasColumnType("text")
+                    b.Property<int>("Unit")
+                        .HasColumnType("int")
                         .HasColumnName("unit");
 
                     b.HasKey("Id");

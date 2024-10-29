@@ -19,40 +19,37 @@ namespace EShopBE.models
         public string? Name { get; set; }
 
 
-        [Column("group", TypeName = "text")]
-        public string? Group { get; set; }
+        [Column("group", TypeName = "int")]
+        public int Group { get; set; }
 
-        [Column("unit", TypeName = "text")]
-        public string? Unit { get; set; }
+        [Column("unit", TypeName = "int")]
+        public int Unit { get; set; }
 
         [Column("price", TypeName = "bigint")]
         public long Price { get; set; }
 
 
-        [Column("isHide", TypeName = "text")]
-        public string? IsHide { get; set; }
+        [Column("isHide", TypeName = "bit")]
+        public int IsHide { get; set; }
 
         [Column("isParent", TypeName = "bit")]
 
         public int IsParent { get; set; }
 
-        [Column("type", TypeName = "text")]
-        public string? Type { get; set; }
+        [Column("type", TypeName = "int")]
+        public int Type { get; set; }
 
         [Column("parentId", TypeName = "int")]
         public int ParentId { get; set; }
 
-        [Column("manager_by", TypeName = "text")]
-        public string? ManagerBy { get; set; }
+        [Column("manager_by", TypeName = "int")]
+        public int ManagerBy { get; set; }
 
-        [Column("status", TypeName = "text")]
-        public string? Status { get; set; }
+        [Column("status", TypeName = "int")]
+        public int Status { get; set; }
 
         [Column("sell", TypeName = "bigint")]
         public long Sell { get; set; }
-
-        [Column("barcode", TypeName = "text")]
-        public string? Barcode { get; set; }
 
         [Column("color", TypeName = "text")]
         public string? Color { get; set; }

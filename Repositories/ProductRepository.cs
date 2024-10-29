@@ -162,26 +162,26 @@ namespace EShopBE.repositories
             if (!string.IsNullOrEmpty(ProductQuery.Name))
                 Products = Products.Where(p => p.Name != null && p.Name.Contains(ProductQuery.Name.Trim()));
             // tìm theo nhóm
-            if (!string.IsNullOrEmpty(ProductQuery.Group))
-                Products = Products.Where(p => p.Group != null && p.Group.Contains(ProductQuery.Group.Trim()));
+            if (!string.IsNullOrEmpty(ProductQuery.Group.ToString()))
+                Products = Products.Where(p => p.Group == ProductQuery.Group);
             // tìm theo đơn vị
-            if (!string.IsNullOrEmpty(ProductQuery.Unit))
-                Products = Products.Where(p => p.Unit != null && p.Unit.Contains(ProductQuery.Unit.Trim()));
+            if (!string.IsNullOrEmpty(ProductQuery.Unit.ToString()))
+                Products = Products.Where(p => p.Unit == ProductQuery.Unit);
             // tìm theo giá
-            if (ProductQuery.Price.ToString() != null)
+            if (!string.IsNullOrEmpty(ProductQuery.Price.ToString()))
                 Products = Products.Where(p => p.Price <= ProductQuery.Price);
             // tìm theo hiển thị
-            if (ProductQuery.IsHide != null && ProductQuery.IsHide != Constants.ALL)
+            if (!string.IsNullOrEmpty(ProductQuery.IsHide.ToString()))
                 Products = Products.Where(p => p.IsHide == ProductQuery.IsHide);
             // tìm theo loại
-            if (!string.IsNullOrEmpty(ProductQuery.Type) && ProductQuery.Type != Constants.ALL)
-                Products = Products.Where(p => p.Type != null && p.Type.Contains(ProductQuery.Type.Trim()));
+            if (!string.IsNullOrEmpty(ProductQuery.Type.ToString()))
+                Products = Products.Where(p => p.Type == ProductQuery.Type);
             // tìm theo quản lý theo
-            if (!string.IsNullOrEmpty(ProductQuery.ManagerBy) && ProductQuery.ManagerBy != Constants.ALL)
-                Products = Products.Where(p => p.ManagerBy != null && p.ManagerBy.Contains(ProductQuery.ManagerBy.Trim()));
+            if (!string.IsNullOrEmpty(ProductQuery.ManagerBy.ToString()))
+                Products = Products.Where(p => p.ManagerBy == ProductQuery.ManagerBy);
             // tìm theo trạng thái
-            if (!string.IsNullOrEmpty(ProductQuery.Status) && ProductQuery.Status != Constants.ALL)
-                Products = Products.Where(p => p.Status != null && p.Status.Contains(ProductQuery.Status.Trim()));
+            if (!string.IsNullOrEmpty(ProductQuery.Status.ToString()))
+                Products = Products.Where(p => p.Status == ProductQuery.Status);
             var skipNumber = (ProductQuery.PageNumber - 1) * ProductQuery.PageSize;
             int TotalRecord = _context.Products.Where(p => p.IsParent == 1).Count();
             int totalPage = TotalRecord <= ProductQuery.PageSize ? 1 : _context.Products.Count() % ProductQuery.PageSize == 0 ? TotalRecord / ProductQuery.PageSize : (TotalRecord / ProductQuery.PageSize) + 1;
@@ -284,7 +284,6 @@ namespace EShopBE.repositories
 
                 productModel.CodeSKU = Product.CodeSKU;
                 productModel.Name = Product.Name;
-                productModel.Barcode = Product.Barcode;
                 productModel.Color = Product.Color;
                 productModel.Unit = Product.Unit;
                 productModel.Description = Product.Description;
@@ -343,7 +342,6 @@ namespace EShopBE.repositories
                             existingProduct.CodeSKU = updateRequest.CodeSKU;
                         }
                         existingProduct.Name = updateRequest.Name;
-                        existingProduct.Barcode = updateRequest.Barcode;
                         existingProduct.Color = updateRequest.Color;
                         existingProduct.Unit = updateRequest.Unit;
                         existingProduct.Description = updateRequest.Description;
@@ -471,57 +469,5 @@ namespace EShopBE.repositories
             return true;
         }
 
-        public async Task<bool> IsBarcodes(string Barcode, int id)
-        {
-            var productById = await GetProductsByIdAsync(id);
-            var isBarcode = await _context.Products.AnyAsync(p => p.Barcode == Barcode);
-
-            if (productById.Data != null && productById.Data.Barcode != Barcode && isBarcode)
-            {
-                return true;
-            }
-            return false;
-
-        }
-
-        public async Task<bool> IsBarcodeCreate(string Barcode)
-        {
-            var isBarcode = await _context.Products.AnyAsync(p => p.Barcode == Barcode);
-            return isBarcode;
-
-        }
-
-        public async Task<bool> IsListBarcodes(IEnumerable<Product?> products, bool isCreate)
-        {
-            if (!isCreate)
-            {
-                foreach (var product in products)
-                {
-                    if (product != null && product.Barcode != null)
-                    {
-                        var isCheckExsist = await IsBarcodes(product.Barcode, product.Id);
-                        if (isCheckExsist)
-                        {
-                            return false;
-                        }
-                    }
-                }
-                return true;
-            }
-
-            foreach (var product in products)
-            {
-                if (product != null && product.Barcode != null)
-                {
-                    var isCheckExsist = await IsBarcodeCreate(product.Barcode);
-                    if (isCheckExsist)
-                    {
-                        return false;
-                    }
-                }
-            }
-            return true;
-
-        }
     }
 }
