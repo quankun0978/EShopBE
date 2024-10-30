@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EShopBE.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20241029143032_Init")]
+    [Migration("20241030031929_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -45,8 +45,9 @@ namespace EShopBE.Migrations
                         .HasColumnType("text")
                         .HasColumnName("description");
 
-                    b.Property<int>("Group")
-                        .HasColumnType("int")
+                    b.Property<string>("Group")
+                        .IsRequired()
+                        .HasColumnType("text")
                         .HasColumnName("group");
 
                     b.Property<string>("ImageUrl")
@@ -60,10 +61,6 @@ namespace EShopBE.Migrations
                     b.Property<ulong>("IsParent")
                         .HasColumnType("bit")
                         .HasColumnName("isParent");
-
-                    b.Property<int>("ManagerBy")
-                        .HasColumnType("int")
-                        .HasColumnName("manager_by");
 
                     b.Property<string>("Name")
                         .HasColumnType("text")
@@ -89,8 +86,9 @@ namespace EShopBE.Migrations
                         .HasColumnType("int")
                         .HasColumnName("type");
 
-                    b.Property<int>("Unit")
-                        .HasColumnType("int")
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasColumnType("text")
                         .HasColumnName("unit");
 
                     b.HasKey("Id");

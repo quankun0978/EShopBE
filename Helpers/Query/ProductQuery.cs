@@ -11,11 +11,11 @@ namespace EShopBE.Helpers.Query
         [DefaultValue("")]
         public string Name { get; set; } = string.Empty;
         [DefaultValue("")]
-        public int Group { get; set; }
+        public string Group { get; set; } = string.Empty;
         [DefaultValue("")]
-        public int Unit { get; set; }
+        public string Unit { get; set; } = string.Empty;
         [DefaultValue(10000000)]
-        public long Price { get; set; }
+        public long? Price { get; set; }
         [DefaultValue(1)]
         public int IsHide { get; set; }
         [DefaultValue("")]
@@ -28,5 +28,7 @@ namespace EShopBE.Helpers.Query
         public int PageNumber { get; set; }
         [DefaultValue(50)]
         public int PageSize { get; set; }
+        [DefaultValue(true)]
+        public int IsPaginate { get; set; }
     }
 }

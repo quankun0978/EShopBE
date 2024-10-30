@@ -14,11 +14,11 @@ namespace EShopBE.Dtos.Product
         [Required]
         public string Name { get; set; } = string.Empty;
         [DefaultValue("")]
-        public int Group { get; set; }
+        public string Group { get; set; } = string.Empty;
 
         [DefaultValue("")]
 
-        public int Unit { get; set; }
+        public string Unit { get; set; } = string.Empty;
         [DefaultValue(40000)]
 
         public long Price { get; set; }
@@ -28,8 +28,7 @@ namespace EShopBE.Dtos.Product
         [DefaultValue("Hàng hóa")]
 
         public int Type { get; set; }
-        [DefaultValue("khác")]
-        public int ManagerBy { get; set; }
+
         [DefaultValue("")]
         public int Status { get; set; }
 

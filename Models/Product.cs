@@ -19,15 +19,14 @@ namespace EShopBE.models
         public string? Name { get; set; }
 
 
-        [Column("group", TypeName = "int")]
-        public int Group { get; set; }
+        [Column("group", TypeName = "text")]
+        public string Group { get; set; } = string.Empty;
 
-        [Column("unit", TypeName = "int")]
-        public int Unit { get; set; }
+        [Column("unit", TypeName = "text")]
+        public string Unit { get; set; } = string.Empty;
 
         [Column("price", TypeName = "bigint")]
         public long Price { get; set; }
-
 
         [Column("isHide", TypeName = "bit")]
         public int IsHide { get; set; }
@@ -41,9 +40,6 @@ namespace EShopBE.models
 
         [Column("parentId", TypeName = "int")]
         public int ParentId { get; set; }
-
-        [Column("manager_by", TypeName = "int")]
-        public int ManagerBy { get; set; }
 
         [Column("status", TypeName = "int")]
         public int Status { get; set; }

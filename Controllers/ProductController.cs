@@ -287,8 +287,7 @@ namespace EShopBE.controllers
                 var isProductExsist = await _ProductRepo.IsProductExsits(updateProductBody.ListSkuUpdate.Id, null, true);
                 var isCodeSkuExsist = await _ProductRepo.IsCheckCodeSkuInParent(updateProductBody.ListSkuUpdate.CodeSKU, updateProductBody.ListSkuUpdate.Id);
                 var isListCodeSkuExsist = await _ProductRepo.IsCheckListCodeSkuInParent(updateProductBody.ListSkuUpdate.Products);
-                // var productById = await _ProductRepo.GetProductsByIdAsync(updateProductBody.ListSkuUpdate.Id);
-                // var productByCodeSku = await _ProductRepo.IsProductExsits(-1, updateProductBody.ListSkuUpdate.CodeSKU, false);
+
                 if (!isProductExsist)
                 {
                     return NotFound(new ResDto<string>

@@ -162,25 +162,22 @@ namespace EShopBE.repositories
             if (!string.IsNullOrEmpty(ProductQuery.Name))
                 Products = Products.Where(p => p.Name != null && p.Name.Contains(ProductQuery.Name.Trim()));
             // tìm theo nhóm
-            if (!string.IsNullOrEmpty(ProductQuery.Group.ToString()))
-                Products = Products.Where(p => p.Group == ProductQuery.Group);
+            if (!string.IsNullOrEmpty(ProductQuery.Group))
+                Products = Products.Where(p => p.Group.Contains(ProductQuery.Group));
             // tìm theo đơn vị
-            if (!string.IsNullOrEmpty(ProductQuery.Unit.ToString()))
-                Products = Products.Where(p => p.Unit == ProductQuery.Unit);
+            if (!string.IsNullOrEmpty(ProductQuery.Unit))
+                Products = Products.Where(p => p.Unit.Contains(ProductQuery.Unit));
             // tìm theo giá
             if (!string.IsNullOrEmpty(ProductQuery.Price.ToString()))
                 Products = Products.Where(p => p.Price <= ProductQuery.Price);
             // tìm theo hiển thị
-            if (!string.IsNullOrEmpty(ProductQuery.IsHide.ToString()))
+            if (!string.IsNullOrEmpty(ProductQuery.IsHide.ToString()) && ProductQuery.IsHide != 0)
                 Products = Products.Where(p => p.IsHide == ProductQuery.IsHide);
             // tìm theo loại
-            if (!string.IsNullOrEmpty(ProductQuery.Type.ToString()))
+            if (!string.IsNullOrEmpty(ProductQuery.Type.ToString()) && ProductQuery.Type != 0)
                 Products = Products.Where(p => p.Type == ProductQuery.Type);
-            // tìm theo quản lý theo
-            if (!string.IsNullOrEmpty(ProductQuery.ManagerBy.ToString()))
-                Products = Products.Where(p => p.ManagerBy == ProductQuery.ManagerBy);
             // tìm theo trạng thái
-            if (!string.IsNullOrEmpty(ProductQuery.Status.ToString()))
+            if (!string.IsNullOrEmpty(ProductQuery.Status.ToString()) && ProductQuery.Status != 0)
                 Products = Products.Where(p => p.Status == ProductQuery.Status);
             var skipNumber = (ProductQuery.PageNumber - 1) * ProductQuery.PageSize;
             int TotalRecord = _context.Products.Where(p => p.IsParent == 1).Count();
@@ -201,14 +198,16 @@ namespace EShopBE.repositories
                 .OrderBy(p => p.Id)
                 .Skip(skipNumber)
                 .Take(ProductQuery.PageSize)
-                .ToListAsync(); return new ResPaginateProductDto<Product>
-                {
-                    TotalPage = totalPage,
-                    CurrentPage = ProductQuery.PageNumber,
-                    TotalRecord = TotalRecord,
-                    PageSize = ProductQuery.PageSize,
-                    Data = data
-                };
+                .ToListAsync();
+
+            return new ResPaginateProductDto<Product>
+            {
+                TotalPage = totalPage,
+                CurrentPage = ProductQuery.PageNumber,
+                TotalRecord = TotalRecord,
+                PageSize = ProductQuery.PageSize,
+                Data = data
+            };
         }
 
         // xử lấy ra danh hàng hóa theo mã sku

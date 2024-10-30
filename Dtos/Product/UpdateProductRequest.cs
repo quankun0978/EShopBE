@@ -16,11 +16,11 @@ namespace EShopBE.Dtos.Product
         [Required]
         public string Name { get; set; } = string.Empty;
         [DefaultValue("")]
-        public int Group { get; set; }
+        public string Group { get; set; } = string.Empty;
 
         [DefaultValue("")]
 
-        public int Unit { get; set; }
+        public string Unit { get; set; } = string.Empty;
         [DefaultValue(40000)]
 
         public long Price { get; set; }
@@ -30,9 +30,6 @@ namespace EShopBE.Dtos.Product
         [DefaultValue("")]
 
         public int Type { get; set; }
-        [DefaultValue("")]
-
-        public int ManagerBy { get; set; }
         [DefaultValue("")]
 
 
