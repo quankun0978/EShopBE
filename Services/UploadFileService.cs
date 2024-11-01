@@ -5,7 +5,7 @@ namespace EShopBE.Services
 {
     public class UploadFileService : IUploadFileService
     {
-        //xủ lý tải ảnh lên server
+        // xử lý tải ảnh lên server
         public bool DeleteImage(HttpRequest request, string fileUrl, string path)
         {
             try
@@ -30,6 +30,7 @@ namespace EShopBE.Services
                 return false;
             }
         }
+
         // xử lý xóa ảnh khỏi server
         public bool IsImageFile(HttpRequest request, string fileUrl, string path)
         {
@@ -48,15 +49,11 @@ namespace EShopBE.Services
         }
 
         // xử lý kiểm tra xem ảnh đã tồn tại trong server chưa
-
         public async Task<ImageDto> UploadImage(HttpRequest request, FileUploadRequest fileData, string path)
         {
             if (request == null || string.IsNullOrEmpty(fileData.FileData))
             {
-                return new ImageDto
-                {
-
-                };
+                return new ImageDto{};
             }
 
             // Decode the Base64 string into bytes
@@ -80,7 +77,6 @@ namespace EShopBE.Services
             {
                 ImageUrl = fileUrl,
                 FileData = fileBytes
-
             };
         }
     }

@@ -10,43 +10,44 @@ namespace EShopBE.Dtos.Product
         [DefaultValue("")]
         [Required]
         public string CodeSKU { get; set; } = string.Empty;
+
         [DefaultValue("")]
         [Required]
         public string Name { get; set; } = string.Empty;
+
         [DefaultValue("")]
         public string Group { get; set; } = string.Empty;
 
         [DefaultValue("")]
-
         public string Unit { get; set; } = string.Empty;
-        [DefaultValue(40000)]
 
+        [DefaultValue(40000)]
         public long Price { get; set; }
 
         [DefaultValue("Có")]
         public int IsHide { get; set; }
-        [DefaultValue("Hàng hóa")]
 
+        [DefaultValue("Hàng hóa")]
         public int Type { get; set; }
 
         [DefaultValue("")]
         public int Status { get; set; }
 
         [DefaultValue(4000)]
-
         public long Sell { get; set; }
 
-
         [DefaultValue("")]
-
         public string Color { get; set; } = string.Empty;
 
         [DefaultValue(1)]
         public int IsParent { get; set; }
+
         [DefaultValue("")]
         public string Description { get; set; } = string.Empty;
-        [DefaultValue("abc.xyz")]
+
         public FileUploadRequest? Image { get; set; }
+
+        [DefaultValue("abc.xyz")]
         public string? ImageUrl { get; set; }
 
         public List<EShopBE.models.Product> Products { get; set; } = new List<models.Product> { };

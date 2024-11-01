@@ -21,9 +21,8 @@ namespace EShopBE.controllers
         }
 
         // Generate mã sku
-
         [HttpPost]
-        [Route("generate_SKU")]
+        [Route("generate_sku")]
         public async Task<IActionResult> GenerateSKU([FromBody] GenerateCodeSKURequest payload)
         {
             try
@@ -44,7 +43,6 @@ namespace EShopBE.controllers
                     Success = false,
                     Data = null
                 });
-
             }
             catch (Exception ex)
             {
@@ -54,9 +52,8 @@ namespace EShopBE.controllers
         }
 
         // generate 1 danh sách các mã sku
-
         [HttpPost]
-        [Route("list_generate_SKU")]
+        [Route("list_generate_sku")]
         public async Task<IActionResult> GenerateListSKU([FromBody] GenerateCodeListSKURequest payload)
         {
             try
@@ -77,7 +74,6 @@ namespace EShopBE.controllers
                     Success = false,
                     Data = null
                 });
-
             }
             catch (Exception ex)
             {
@@ -86,14 +82,13 @@ namespace EShopBE.controllers
             }
         }
 
-
+        // generate 1 danh sách các mã sku để update
         [HttpPost]
-        [Route("list_generate_SKU_update")]
+        [Route("list_generate_sku_update")]
         public async Task<IActionResult> GenerateListUpdateSKU([FromBody] GenerateCodeListSKURequest payload)
         {
             try
             {
-
                 if (await _ProductRepo.IsProductExsits(payload.Id, null, true) == false)
                 {
                     return NotFound(new ResDto<string>
@@ -120,7 +115,6 @@ namespace EShopBE.controllers
         }
 
         // lấy ra danh sách các hàng hóa
-
         [HttpPost]
         [Route("list")]
         public async Task<IActionResult> GetAllProduct([FromBody] ProductQuery ProductQuery)
@@ -143,7 +137,6 @@ namespace EShopBE.controllers
         }
 
         // thêm mới nhiều hàng hóa
-
         [HttpPost]
         [Route("add")]
         public async Task<IActionResult> AddProduct([FromBody] CreateProductRequest Product)
@@ -162,7 +155,6 @@ namespace EShopBE.controllers
                         Message = Constants.CODE_SKU_PRODUCT_REQUIRED,
                         Success = false
                     });
-
                 }
                 else if (!isCheck)
                 {
@@ -171,7 +163,6 @@ namespace EShopBE.controllers
                         Message = Constants.CODE_SKU_PRODUCT_EXISTS,
                         Success = false
                     });
-
                 }
                 else if (!isDuplicateListSku)
                 {
@@ -197,12 +188,10 @@ namespace EShopBE.controllers
         }
 
         // xóa nhiều hàng hóa
-
         [HttpPost]
         [Route("delete")]
         public async Task<IActionResult> DeleteProduct([FromBody] IEnumerable<int> listIds)
         {
-            // productModel.CodeSKU = await _skuService.GenerateSkuAsync(product.Name);
             try
             {
                 var isCheck = await _ProductRepo.IsListIds(listIds);
@@ -231,7 +220,6 @@ namespace EShopBE.controllers
         }
 
         // chi tiết hàng hóa
-
         [HttpGet]
         [Route("detail")]
         public async Task<IActionResult> GetProductByCodeSKU(int id)
@@ -248,7 +236,6 @@ namespace EShopBE.controllers
                     });
                 }
 
-
                 return Ok(new ResDto<ResProductDto<Product>>
                 {
                     Message = Constants.SUCCESS,
@@ -260,12 +247,10 @@ namespace EShopBE.controllers
             {
                 Console.WriteLine("error" + ex.Message);
                 return StatusCode(500, new ResDto<string> { Message = Constants.ERROR_FROM_SERVER + ex.Message, Success = false });
-
             }
         }
 
         // cập nhật danh sách các hàng hóa
-
         [HttpPost]
         [Route("update")]
         public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductBody updateProductBody)
@@ -313,9 +298,6 @@ namespace EShopBE.controllers
                     });
                 }
 
-
-                // var isCheck = await _ProductRepo.IsListSKus();
-
                 var listDelete = updateProductBody.ListSKUsDelete != null ? updateProductBody.ListSKUsDelete : [];
 
                 await _ProductRepo.UpdateProductRangeAsync(Request, updateProductBody.ListSkuUpdate, listDelete);
@@ -332,6 +314,8 @@ namespace EShopBE.controllers
                 return StatusCode(500, new ResDto<string> { Message = Constants.ERROR_FROM_SERVER + ex.Message, Success = false });
             }
         }
+
+        // kiểm tra xem mã sku có tồn tại trong hệ thống không
 
         [HttpPost]
         [Route("is_code_sku")]
@@ -369,6 +353,5 @@ namespace EShopBE.controllers
                 return StatusCode(500, new ResDto<string> { Message = Constants.ERROR_FROM_SERVER + ex.Message, Success = false });
             }
         }
-
     }
 }

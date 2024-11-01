@@ -3,21 +3,11 @@ using EShopBE.Dtos.Product;
 namespace EShopBE.models.Mapper;
 public static class ProductMapper
 {
-    // public static ProductDto MapToDto(Product product)
-    // {
-    //     if (product == null) return null;
-
-    //     return new ProductDto
-    //     {
-    //         Id = product.Id,
-    //         Name = product.Name,
-    //         Price = product.Price
-    //     };
-    // }
+   
+    // map sản phẩm 
 
     public static Product MapToProduct(Product productDto, int id, string? ImageUrl)
     {
-
         return new Product
         {
             CodeSKU = productDto.CodeSKU,
@@ -36,9 +26,11 @@ public static class ProductMapper
             Description = productDto.Description
         };
     }
+
+    // map dữ liệu thêm mới về sản phẩm
+
     public static Product MapToEntity(UpdateProductRequest productDto, int id, int parentId, string? ImageUrlString)
     {
-
         return new Product
         {
             Id = id,
@@ -58,10 +50,11 @@ public static class ProductMapper
             Description = productDto.Description
         };
     }
+
+    // map dữ liệu thêm mới về sản phẩm
+
     public static Product ToStockFromCreateDTO(CreateProductRequest productDto, int id, string? ImageUrl, int IsParent)
     {
-        Random random = new Random();
-        int randomNumber = random.Next(100000, 1000000); // Tạo số ngẫu nhiên từ 100000 đến 999999
         if (IsParent == 1)
         {
             return new Product

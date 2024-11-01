@@ -101,7 +101,6 @@ namespace EShopBE.repositories
             {
                 return codeSKU + "-" + GenCode(c) + (maxId + index + 1).ToString();
             });
-            // Await all tasks and convert the result to a List<string>
 
             return listNewSkuTasks.ToList();
         }
@@ -179,6 +178,7 @@ namespace EShopBE.repositories
             // tìm theo trạng thái
             if (!string.IsNullOrEmpty(ProductQuery.Status.ToString()) && ProductQuery.Status != 0)
                 Products = Products.Where(p => p.Status == ProductQuery.Status);
+            // phân trang 
             var skipNumber = (ProductQuery.PageNumber - 1) * ProductQuery.PageSize;
             int TotalRecord = _context.Products.Where(p => p.IsParent == 1).Count();
             int totalPage = TotalRecord <= ProductQuery.PageSize ? 1 : _context.Products.Count() % ProductQuery.PageSize == 0 ? TotalRecord / ProductQuery.PageSize : (TotalRecord / ProductQuery.PageSize) + 1;
@@ -210,7 +210,7 @@ namespace EShopBE.repositories
             };
         }
 
-        // xử lấy ra danh hàng hóa theo mã sku
+        // xử lấy ra danh sách hàng hóa theo id
 
         public async Task<ResProductDto<Product>> GetProductsByIdAsync(int id)
         {
@@ -242,12 +242,14 @@ namespace EShopBE.repositories
             return data;
         }
 
-        // xử lý kiểm tra xem danh sách mã có mã nào không tồn tại không
+        // xử lý kiểm tra xem danh sách id có id nào không tồn tại trong hệ thống không
 
         public async Task<bool> IsListIds(IEnumerable<int> ListIds)
         {
             return await _context.Products.AnyAsync(s => ListIds.Contains(s.Id));
         }
+
+        // kiểm tra xem trong 1 danh sách các mã có mã nào không tồn tại trong hệ thống không
 
         public async Task<bool> IsListSKus(IEnumerable<string?> ListSku)
         {
@@ -316,14 +318,12 @@ namespace EShopBE.repositories
             }
             var ProductParent = ProductMapper.MapToEntity(Product, Product.Id, 0, ImageUrl);
 
-
             Product.Products.Add(ProductParent);
             if (Product.Products.Count() > 0)
             {
                 var listProducts = await GetListSkuParent(Product.Id, new List<int> { });
                 var listSKUParent = listProducts.Select(p => p.CodeSKU).ToList();
                 var index = 0;
-                // var maxId = GetMaxId("", new List<Product> { }, listSKUParent);
                 if (listIds.Count() > 0)
                 {
                     await DeleteProductAsync(listIds, false);
@@ -333,8 +333,7 @@ namespace EShopBE.repositories
                     var existingProduct = await GetProductByIdOrCodeSKu(updateRequest.Id, null);
                     if (existingProduct != null)
                     {
-                        // if (existingProduct.CodeSKU != null)
-                        // {
+                      
                         var isCodeSku = await IsProductExsits(null, updateRequest.CodeSKU, false);
                         if (!isCodeSku)
                         {
@@ -350,34 +349,18 @@ namespace EShopBE.repositories
                         existingProduct.Status = updateRequest.Status;
                         existingProduct.Price = updateRequest.Price;
                         existingProduct.Sell = updateRequest.Sell;
-                        // }
-                        // else
-                        // {
-                        //     updateRequest.Color = updateRequest.Color != null ? updateRequest.Color : "";
-                        //     var isCodeSku = await IsProductExsits(null, updateRequest.CodeSKU, false);
-                        //     if (!isCodeSku)
-                        //     {
-                        //         var ProductChild = ProductMapper.MapToProduct(updateRequest, Product.Id, ImageUrl);
-                        //         await _context.Products.AddAsync(ProductChild);
-                        //         index++;
-                        //     }
-                        // }
+
                     }
                     else
                     {
                         updateRequest.Color = updateRequest.Color != null ? updateRequest.Color : "";
-                        // var isCodeSku = await IsProductExsits(null, updateRequest.CodeSKU, false);
-                        // if (!isCodeSku)
-                        // {
                         var ProductChild = ProductMapper.MapToProduct(updateRequest, Product.Id, ImageUrl);
                         await _context.Products.AddAsync(ProductChild);
                         index++;
-                        // }
                     }
                     await _context.SaveChangesAsync();
                 }
             }
-            // }
         }
 
         // xử lý thêm mới 1 sản phẩm
@@ -388,7 +371,7 @@ namespace EShopBE.repositories
             await _context.SaveChangesAsync();
         }
 
-        // xử lý kiểm tra trùng lặp
+        // xử lý kiểm tra trùng lặp của 1 danh sách mã sku khi truyền lên
 
         public Task<bool> IsDuplicateListSku(IEnumerable<string?> listSKUs)
         {
@@ -398,6 +381,8 @@ namespace EShopBE.repositories
 
             return Task.FromResult(!hasDuplicates); // 
         }
+
+        // kiểm tra xem màu của sản phẩm đó đã tồn tại chưa
 
         public async Task<bool> IsExsistColor(IEnumerable<string?> listColors, int id)
         {
@@ -438,11 +423,15 @@ namespace EShopBE.repositories
             return 0;
         }
 
+        // lấy ra danh sách các sản phẩm con theo id của sản phẩm cha và nó không nằm trong danh sách các sản phẩm truyền lên để xóa
+
         public async Task<List<Product>> GetListSkuParent(int id, List<int> listIdDelete)
         {
             var listSKUParent = await _context.Products.Where(P => P.ParentId == id && !listIdDelete.Contains(P.Id)).ToListAsync();
             return listSKUParent;
         }
+
+        // kiểm tra xem sản phẩm con đã có trong hệ thống chưa
 
         public async Task<bool> IsCheckCodeSkuInParent(string codeSku, int id)
         {
@@ -454,6 +443,8 @@ namespace EShopBE.repositories
             }
             return true;
         }
+
+        // kiểm tra xem danh sách các sản phẩm con đã có trong hệ thống chưa
 
         public async Task<bool> IsCheckListCodeSkuInParent(IEnumerable<Product?> products)
         {

@@ -6,7 +6,6 @@ namespace EShopBE.models
 {
     public class Product
     {
-
         [Key]
         [Column("id")]
         public int Id { get; set; }
@@ -14,10 +13,8 @@ namespace EShopBE.models
         [Column("codeSKU")]
         public string? CodeSKU { get; set; }
 
-
         [Column("name", TypeName = "text")]
         public string? Name { get; set; }
-
 
         [Column("group", TypeName = "text")]
         public string Group { get; set; } = string.Empty;
