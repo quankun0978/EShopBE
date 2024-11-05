@@ -303,11 +303,8 @@ namespace EShopBE.repositories
         {
 
             var ProductParentModel = await _context.Products.FindAsync(Product.Id);
-            var ImageUrl = "";
-            if (ProductParentModel != null)
-            {
-                ImageUrl = ProductParentModel.ImageUrl;
-            }
+            var ImageUrl = Product.ImageUrl;
+            Console.WriteLine(ImageUrl);
             var isImageFile = ImageUrl != null ? _uploadFileService.IsImageFile(request, ImageUrl, "Products") : false;
 
             if (isImageFile && Product.Image != null && Product.Image.FileData != null)
@@ -317,7 +314,7 @@ namespace EShopBE.repositories
                 ImageUrl = ImageData.ImageUrl;
             }
             var ProductParent = ProductMapper.MapToEntity(Product, Product.Id, 0, ImageUrl);
-
+            Console.WriteLine(ImageUrl);
             Product.Products.Add(ProductParent);
             if (Product.Products.Count() > 0)
             {
@@ -333,7 +330,7 @@ namespace EShopBE.repositories
                     var existingProduct = await GetProductByIdOrCodeSKu(updateRequest.Id, null);
                     if (existingProduct != null)
                     {
-                      
+
                         var isCodeSku = await IsProductExsits(null, updateRequest.CodeSKU, false);
                         if (!isCodeSku)
                         {
