@@ -3,10 +3,10 @@ using EShopBE.Dtos.Product;
 namespace EShopBE.models.Mapper;
 public static class ProductMapper
 {
-   
+
     // map sản phẩm 
 
-    public static Product MapToProduct(Product productDto, int id, string? ImageUrl)
+    public static Product MapToProduct(Product productDto, int id, string? ImageUrl, long price)
     {
         return new Product
         {
@@ -15,7 +15,7 @@ public static class ProductMapper
             Color = productDto.Color,
             Group = productDto.Group,
             IsHide = productDto.IsHide,
-            Price = productDto.Price,
+            Price = price,
             Sell = productDto.Sell,
             Status = productDto.Status,
             Type = productDto.Type,
@@ -23,6 +23,27 @@ public static class ProductMapper
             ImageUrl = ImageUrl,
             IsParent = productDto.IsParent,
             ParentId = id,
+            Description = productDto.Description
+        };
+    }
+
+    public static Product MapToProductGetAll(Product productDto, long price)
+    {
+        return new Product
+        {
+            Id = productDto.Id,
+            CodeSKU = productDto.CodeSKU,
+            Name = productDto.Name,
+            Color = productDto.Color,
+            Group = productDto.Group,
+            IsHide = productDto.IsHide,
+            Price = price,
+            Sell = productDto.Sell,
+            Status = productDto.Status,
+            Type = productDto.Type,
+            Unit = productDto.Unit,
+            ImageUrl = productDto.ImageUrl,
+            IsParent = productDto.IsParent,
             Description = productDto.Description
         };
     }
