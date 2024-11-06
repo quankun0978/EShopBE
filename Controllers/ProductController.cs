@@ -222,7 +222,7 @@ namespace EShopBE.controllers
         // chi tiết hàng hóa
         [HttpGet]
         [Route("detail")]
-        public async Task<IActionResult> GetProductByCodeSKU(int id)
+        public async Task<IActionResult> GetProductById(int id)
         {
             try
             {
