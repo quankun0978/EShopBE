@@ -53,7 +53,7 @@ namespace EShopBE.Services
         {
             if (request == null || string.IsNullOrEmpty(fileData.FileData))
             {
-                return new ImageDto{};
+                return new ImageDto { };
             }
 
             // Decode the Base64 string into bytes

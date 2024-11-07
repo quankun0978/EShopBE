@@ -6,8 +6,8 @@ using EShopBE.Helpers.Query;
 using EShopBE.interfaces;
 using EShopBE.models;
 using Microsoft.EntityFrameworkCore;
-using EShopBE.Resource.Constants;
 using EShopBE.models.Mapper;
+using EShopBE.Helpers.Func;
 
 namespace EShopBE.repositories
 {
@@ -194,16 +194,6 @@ namespace EShopBE.repositories
                 };
             }
 
-            // var data = await Products
-            //     .Where(p => p.IsParent == 1).Select( async (p) =>
-            //     {
-            //         var productChilds = await  GetProductsByIdAsync(p.Id);
-            //         var averageProduct = productChilds.Atributes.Count()
-            //     })
-            //     .OrderBy(p => p.Id)
-            //     .Skip(skipNumber)
-            //     .Take(ProductQuery.PageSize)
-            //     .ToListAsync();
             var ProductParents = await Products.Where(p => p.IsParent == 1).OrderBy(p => p.Id).Skip(skipNumber).Take(ProductQuery.PageSize).ToListAsync();
             var data = new List<Product>(); // Change to your desired type
 
@@ -214,13 +204,10 @@ namespace EShopBE.repositories
                 if (productChilds != null && productChilds.Atributes != null && productChilds.Atributes.Count() > 0)
                 {
                     var prices = productChilds.Atributes.Select(p => p.Price).ToArray();
-                    averageProduct = CalculateAverage(prices);
+                    averageProduct = Helper.CalculateAverage(prices);
                 }
-                // Console.WriteLine(item.Id.ToString()+" ");
                 data.Add(ProductMapper.MapToProductGetAll(item, averageProduct));
             }
-
-
 
             return new ResPaginateProductDto<Product>
             {
@@ -304,7 +291,6 @@ namespace EShopBE.repositories
             var productModel = await _context.Products.FindAsync(Product.Id);
             if (productModel != null)
             {
-
                 productModel.CodeSKU = Product.CodeSKU;
                 productModel.Name = Product.Name;
                 productModel.Color = Product.Color;
@@ -326,7 +312,6 @@ namespace EShopBE.repositories
 
             var ProductParentModel = await _context.Products.FindAsync(Product.Id);
             var ImageUrl = Product.ImageUrl;
-            Console.WriteLine(ImageUrl);
             var isImageFile = ImageUrl != null ? _uploadFileService.IsImageFile(request, ImageUrl, "Products") : false;
 
             if (isImageFile && Product.Image != null && Product.Image.FileData != null)
@@ -336,7 +321,6 @@ namespace EShopBE.repositories
                 ImageUrl = ImageData.ImageUrl;
             }
             var ProductParent = ProductMapper.MapToEntity(Product, Product.Id, 0, ImageUrl);
-            Console.WriteLine(ImageUrl);
             Product.Products.Add(ProductParent);
             if (Product.Products.Count() > 0)
             {
@@ -396,7 +380,6 @@ namespace EShopBE.repositories
             var hasDuplicates = listSKUs
             .GroupBy(sku => sku)
             .Any(group => group.Count() > 1);
-
             return Task.FromResult(!hasDuplicates); // 
         }
 
@@ -476,25 +459,5 @@ namespace EShopBE.repositories
             }
             return true;
         }
-
-
-        public static long CalculateAverage(long[] numbers)
-        {
-            if (numbers.Length == 0)
-            {
-                throw new ArgumentException("Mảng không được rỗng.");
-            }
-
-            double sum = 0;
-
-            foreach (double number in numbers)
-            {
-                sum += number; // Cộng dồn các số
-            }
-
-            // Tính trung bình cộng và chuyển đổi sang kiểu long
-            return (long)(sum / numbers.Length); // Chia cho số phần tử và ép kiểu về long
-        }
-
     }
 }

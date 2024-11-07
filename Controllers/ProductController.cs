@@ -257,7 +257,6 @@ namespace EShopBE.controllers
         {
             try
             {
-
                 if (updateProductBody.ListSkuUpdate == null || updateProductBody.ListSkuUpdate.CodeSKU == null || updateProductBody.ListSkuUpdate.CodeSKU == "")
                 {
                     return BadRequest(new ResDto<string>
