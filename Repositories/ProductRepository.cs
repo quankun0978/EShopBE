@@ -35,21 +35,35 @@ namespace EShopBE.repositories
 
         public async Task AddProductRangeAsync(HttpRequest request, CreateProductRequest Product)
         {
-            var ImageUrl = Product.ImageUrl;
-            if (Product.Image != null && Product.Image.FileData != null)
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                var ImageData = await _uploadFileService.UploadImage(request, Product.Image, "Products");
-                ImageUrl = ImageData.ImageUrl;
+                var ImageUrl = Product.ImageUrl;
+                if (Product.Image != null && Product.Image.FileData != null)
+                {
+                    var ImageData = await _uploadFileService.UploadImage(request, Product.Image, "Products");
+                    ImageUrl = ImageData.ImageUrl;
+                }
+                var ProductParent = ProductMapper.ToStockFromCreateDTO(Product, -1, ImageUrl, 1);
+                await AddProductAsync(ProductParent);
+                var productModel = await GetProductByIdOrCodeSKu(0, ProductParent.CodeSKU);
+                // var listSKUGenerate = await GenerateListSkuAsync(colors, productModel.CodeSKU);
+                if (productModel != null)
+                {
+                    var productModels = Product.Products.Select((s, index) => ProductMapper.MapToProduct(s, productModel.Id, ImageUrl, s.Price));
+                    await _context.Products.AddRangeAsync(productModels);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                }
             }
-            var ProductParent = ProductMapper.ToStockFromCreateDTO(Product, -1, ImageUrl, 1);
-            await AddProductAsync(ProductParent);
-            var productModel = await GetProductByIdOrCodeSKu(0, ProductParent.CodeSKU);
-            // var listSKUGenerate = await GenerateListSkuAsync(colors, productModel.CodeSKU);
-            if (productModel != null)
+            catch (Exception)
             {
-                var productModels = Product.Products.Select((s, index) => ProductMapper.MapToProduct(s, productModel.Id, ImageUrl, s.Price));
-                await _context.Products.AddRangeAsync(productModels);
-                await _context.SaveChangesAsync();
+                await transaction.RollbackAsync();
+                throw;
+            }
+            finally
+            {
+                await transaction.DisposeAsync();
             }
         }
 
@@ -57,24 +71,38 @@ namespace EShopBE.repositories
 
         public async Task DeleteProductAsync(IEnumerable<int> listIds, bool IsParent)
         {
-            if (IsParent)
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                foreach (var item in listIds)
+                if (IsParent)
+                {
+                    foreach (var item in listIds)
+                    {
+                        var productsToDelete = await _context.Products
+                           .Where(x => x.ParentId == item || x.Id == item)
+                           .ToListAsync();
+                        _context.Products.RemoveRange(productsToDelete);
+                    }
+                }
+                else
                 {
                     var productsToDelete = await _context.Products
-                       .Where(x => x.ParentId == item || x.Id == item)
+                       .Where(x => listIds.Contains(x.Id))
                        .ToListAsync();
                     _context.Products.RemoveRange(productsToDelete);
                 }
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
             }
-            else
+            catch (Exception)
             {
-                var productsToDelete = await _context.Products
-                   .Where(x => listIds.Contains(x.Id))
-                   .ToListAsync();
-                _context.Products.RemoveRange(productsToDelete);
+                await transaction.RollbackAsync();
+                throw;
             }
-            await _context.SaveChangesAsync();
+            finally
+            {
+                await transaction.DisposeAsync();
+            }
         }
 
         // xử lý lấy ra ký tự là số ở trong mã sku 
@@ -181,15 +209,15 @@ namespace EShopBE.repositories
             // phân trang 
             var skipNumber = (ProductQuery.PageNumber - 1) * ProductQuery.PageSize;
             int TotalRecord = _context.Products.Where(p => p.IsParent == 1).Count();
-            int totalPage = TotalRecord <= ProductQuery.PageSize ? 1 : _context.Products.Count() % ProductQuery.PageSize == 0 ? TotalRecord / ProductQuery.PageSize : (TotalRecord / ProductQuery.PageSize) + 1;
+            int totalPage = TotalRecord <= ProductQuery.PageSize ? 1 : TotalRecord % ProductQuery.PageSize == 0 ? TotalRecord / ProductQuery.PageSize : (TotalRecord / ProductQuery.PageSize) + 1;
             if (ProductQuery.PageNumber > totalPage || ProductQuery.PageNumber == 0)
             {
                 return new ResPaginateProductDto<Product>
                 {
-                    TotalPage = totalPage,
+                    TotalPage = 0,
                     CurrentPage = ProductQuery.PageNumber,
-                    TotalRecord = TotalRecord,
-                    PageSize = ProductQuery.PageSize,
+                    TotalRecord = 0,
+                    PageSize = 0,
                     Data = null
                 };
             }
@@ -213,8 +241,8 @@ namespace EShopBE.repositories
             {
                 TotalPage = totalPage,
                 CurrentPage = ProductQuery.PageNumber,
-                TotalRecord = TotalRecord,
-                PageSize = ProductQuery.PageSize,
+                TotalRecord = ProductQuery.PageSize > data.Count() ? data.Count() : TotalRecord,
+                PageSize = data.Count(),
                 Data = data
             };
         }
@@ -284,84 +312,76 @@ namespace EShopBE.repositories
             return await _context.Products.AnyAsync(s => s.CodeSKU == codeSKU);
         }
 
-        // xử lý cập nhật 1 hàng hóa
-
-        public async Task UpdateProductsAsync(Product Product)
-        {
-            var productModel = await _context.Products.FindAsync(Product.Id);
-            if (productModel != null)
-            {
-                productModel.CodeSKU = Product.CodeSKU;
-                productModel.Name = Product.Name;
-                productModel.Color = Product.Color;
-                productModel.Unit = Product.Unit;
-                productModel.Description = Product.Description;
-                productModel.Group = Product.Group;
-                productModel.ImageUrl = Product.ImageUrl;
-                productModel.IsHide = Product.IsHide;
-                productModel.Status = Product.Status;
-                productModel.Price = Product.Price;
-                productModel.Sell = Product.Sell;
-            }
-        }
-
         // xử lý cập nhật nhiều hàng hóa
 
         public async Task UpdateProductRangeAsync(HttpRequest request, UpdateProductRequest Product, IEnumerable<int> listIds)
         {
-
-            var ProductParentModel = await _context.Products.FindAsync(Product.Id);
-            var ImageUrl = Product.ImageUrl;
-            var isImageFile = ImageUrl != null ? _uploadFileService.IsImageFile(request, ImageUrl, "Products") : false;
-
-            if (isImageFile && Product.Image != null && Product.Image.FileData != null)
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                var isDelete = ImageUrl != null ? _uploadFileService.DeleteImage(request, ImageUrl, "Products") : false;
-                var ImageData = await _uploadFileService.UploadImage(request, Product.Image, "Products");
-                ImageUrl = ImageData.ImageUrl;
-            }
-            var ProductParent = ProductMapper.MapToEntity(Product, Product.Id, 0, ImageUrl);
-            Product.Products.Add(ProductParent);
-            if (Product.Products.Count() > 0)
-            {
-                var listProducts = await GetListSkuParent(Product.Id, new List<int> { });
-                var listSKUParent = listProducts.Select(p => p.CodeSKU).ToList();
-                var index = 0;
-                if (listIds.Count() > 0)
+                var ProductParentModel = await _context.Products.FindAsync(Product.Id);
+                var ImageUrl = Product.ImageUrl;
+                var isImageFile = ImageUrl != null ? _uploadFileService.IsImageFile(request, ImageUrl, "Products") : false;
+
+                if (isImageFile && Product.Image != null && Product.Image.FileData != null)
                 {
-                    await DeleteProductAsync(listIds, false);
+                    var isDelete = ImageUrl != null ? _uploadFileService.DeleteImage(request, ImageUrl, "Products") : false;
+                    var ImageData = await _uploadFileService.UploadImage(request, Product.Image, "Products");
+                    ImageUrl = ImageData.ImageUrl;
                 }
-                foreach (var updateRequest in Product.Products)
+                var ProductParent = ProductMapper.MapToEntity(Product, Product.Id, 0, ImageUrl);
+                Product.Products.Add(ProductParent);
+                if (Product.Products.Count() > 0)
                 {
-                    var existingProduct = await GetProductByIdOrCodeSKu(updateRequest.Id, null);
-                    if (existingProduct != null)
+                    var listProducts = await GetListSkuParent(Product.Id, new List<int> { });
+                    var listSKUParent = listProducts.Select(p => p.CodeSKU).ToList();
+                    var index = 0;
+                    if (listIds.Count() > 0)
                     {
-
-                        var isCodeSku = await IsProductExsits(null, updateRequest.CodeSKU, false);
-                        if (!isCodeSku)
+                        await DeleteProductAsync(listIds, false);
+                    }
+                    foreach (var updateRequest in Product.Products)
+                    {
+                        var existingProduct = await GetProductByIdOrCodeSKu(updateRequest.Id, null);
+                        if (existingProduct != null)
                         {
-                            existingProduct.CodeSKU = updateRequest.CodeSKU;
+
+                            var isCodeSku = await IsProductExsits(null, updateRequest.CodeSKU, false);
+                            if (!isCodeSku)
+                            {
+                                existingProduct.CodeSKU = updateRequest.CodeSKU;
+                            }
+                            existingProduct.Name = updateRequest.Name;
+                            existingProduct.Color = updateRequest.Color;
+                            existingProduct.Unit = updateRequest.Unit;
+                            existingProduct.Description = updateRequest.Description;
+                            existingProduct.Group = updateRequest.Group;
+                            existingProduct.ImageUrl = ImageUrl;
+                            existingProduct.IsHide = updateRequest.IsHide;
+                            existingProduct.Status = updateRequest.Status;
+                            existingProduct.Price = updateRequest.Price;
+                            existingProduct.Sell = updateRequest.Sell;
                         }
-                        existingProduct.Name = updateRequest.Name;
-                        existingProduct.Color = updateRequest.Color;
-                        existingProduct.Unit = updateRequest.Unit;
-                        existingProduct.Description = updateRequest.Description;
-                        existingProduct.Group = updateRequest.Group;
-                        existingProduct.ImageUrl = ImageUrl;
-                        existingProduct.IsHide = updateRequest.IsHide;
-                        existingProduct.Status = updateRequest.Status;
-                        existingProduct.Price = updateRequest.Price;
-                        existingProduct.Sell = updateRequest.Sell;
+                        else
+                        {
+                            updateRequest.Color = updateRequest.Color != null ? updateRequest.Color : "";
+                            var ProductChild = ProductMapper.MapToProduct(updateRequest, Product.Id, ImageUrl, updateRequest.Price);
+                            await _context.Products.AddAsync(ProductChild);
+                            index++;
+                        }
+                        await _context.SaveChangesAsync();
                     }
-                    else
-                    {
-                        updateRequest.Color = updateRequest.Color != null ? updateRequest.Color : "";
-                        var ProductChild = ProductMapper.MapToProduct(updateRequest, Product.Id, ImageUrl, updateRequest.Price);
-                        await _context.Products.AddAsync(ProductChild);
-                        index++;
-                    }
-                    await _context.SaveChangesAsync();
                 }
+                await transaction.CommitAsync();
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+            finally
+            {
+                await transaction.DisposeAsync();
             }
         }
 

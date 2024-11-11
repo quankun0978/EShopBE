@@ -199,7 +199,7 @@ namespace EShopBE.controllers
                 {
                     return NotFound(new ResDto<string>
                     {
-                        Message = Constants.CODE_SKU_PRODUCT_NOT_EXISTS,
+                        Message = Constants.PRODUCT_NOT_EXISTS,
                         Success = false
                     });
                 }
