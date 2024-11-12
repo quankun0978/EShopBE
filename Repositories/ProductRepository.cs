@@ -50,8 +50,15 @@ namespace EShopBE.repositories
                 {
                     var productModels = Product.Products.Select((s, index) => ProductMapper.MapToProduct(s, ProductParent.Id, ImageUrl, s.Price));
                     await _context.Products.AddRangeAsync(productModels);
-                    await _context.SaveChangesAsync();
-                    await transaction.CommitAsync();
+                    var result = await _context.SaveChangesAsync();
+                    if (result > 0)
+                    {
+                        await transaction.CommitAsync();
+                    }
+                    else
+                    {
+                        await transaction.RollbackAsync();
+                    }
                 }
             }
             catch (Exception)
@@ -89,8 +96,15 @@ namespace EShopBE.repositories
                        .ToListAsync();
                     _context.Products.RemoveRange(productsToDelete);
                 }
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
+                var result = await _context.SaveChangesAsync();
+                if (result > 0)
+                {
+                    await transaction.CommitAsync();
+                }
+                else
+                {
+                    await transaction.RollbackAsync();
+                }
             }
             catch (Exception)
             {
