@@ -352,5 +352,22 @@ namespace EShopBE.controllers
                 return StatusCode(500, new ResDto<string> { Message = Constants.ERROR_FROM_SERVER + ex.Message, Success = false });
             }
         }
+
+        [HttpPost]
+        [Route("test_transaction")]
+        public async Task<IActionResult> TestTransaction([FromBody] List<Product> products)
+        {
+            try
+            {
+                await _ProductRepo.TestTransaction(products);
+                return Ok(new ResDto<string> { Message = "SUCCESS", Success = true });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("error" + ex.Message);
+                return StatusCode(500, new ResDto<string> { Message = Constants.ERROR_FROM_SERVER + ex.Message, Success = false });
+            }
+        }
+
     }
 }

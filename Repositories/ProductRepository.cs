@@ -35,22 +35,20 @@ namespace EShopBE.repositories
 
         public async Task AddProductRangeAsync(HttpRequest request, CreateProductRequest Product)
         {
+            var ImageUrl = Product.ImageUrl;
+            if (Product.Image != null && Product.Image.FileData != null)
+            {
+                var ImageData = await _uploadFileService.UploadImage(request, Product.Image, "Products");
+                ImageUrl = ImageData.ImageUrl;
+            }
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var ImageUrl = Product.ImageUrl;
-                if (Product.Image != null && Product.Image.FileData != null)
-                {
-                    var ImageData = await _uploadFileService.UploadImage(request, Product.Image, "Products");
-                    ImageUrl = ImageData.ImageUrl;
-                }
                 var ProductParent = ProductMapper.ToStockFromCreateDTO(Product, -1, ImageUrl, 1);
                 await AddProductAsync(ProductParent);
-                var productModel = await GetProductByIdOrCodeSKu(0, ProductParent.CodeSKU);
-                // var listSKUGenerate = await GenerateListSkuAsync(colors, productModel.CodeSKU);
-                if (productModel != null)
+                if (ProductParent != null)
                 {
-                    var productModels = Product.Products.Select((s, index) => ProductMapper.MapToProduct(s, productModel.Id, ImageUrl, s.Price));
+                    var productModels = Product.Products.Select((s, index) => ProductMapper.MapToProduct(s, ProductParent.Id, ImageUrl, s.Price));
                     await _context.Products.AddRangeAsync(productModels);
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
@@ -208,7 +206,7 @@ namespace EShopBE.repositories
                 Products = Products.Where(p => p.Status == ProductQuery.Status);
             // phân trang 
             var skipNumber = (ProductQuery.PageNumber - 1) * ProductQuery.PageSize;
-            int TotalRecord = _context.Products.Where(p => p.IsParent == 1).Count();
+            int TotalRecord = Products.Where(p => p.IsParent == 1).Count();
             int totalPage = TotalRecord <= ProductQuery.PageSize ? 1 : TotalRecord % ProductQuery.PageSize == 0 ? TotalRecord / ProductQuery.PageSize : (TotalRecord / ProductQuery.PageSize) + 1;
             if (ProductQuery.PageNumber > totalPage || ProductQuery.PageNumber == 0)
             {
@@ -241,7 +239,7 @@ namespace EShopBE.repositories
             {
                 TotalPage = totalPage,
                 CurrentPage = ProductQuery.PageNumber,
-                TotalRecord = ProductQuery.PageSize > data.Count() ? data.Count() : TotalRecord,
+                TotalRecord = TotalRecord,
                 PageSize = data.Count(),
                 Data = data
             };
@@ -283,7 +281,15 @@ namespace EShopBE.repositories
 
         public async Task<bool> IsListIds(IEnumerable<int> ListIds)
         {
-            return await _context.Products.AnyAsync(s => ListIds.Contains(s.Id));
+            foreach (var id in ListIds)
+            {
+                var isProduct = await GetProductByIdOrCodeSKu(id, null);
+                if (isProduct == null)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         // kiểm tra xem trong 1 danh sách các mã có mã nào không tồn tại trong hệ thống không
@@ -392,6 +398,28 @@ namespace EShopBE.repositories
             await _context.Products.AddAsync(product);
             await _context.SaveChangesAsync();
         }
+
+        public async Task TestTransaction(List<Product> products)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                await _context.Products.AddRangeAsync(products);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+            finally
+            {
+                await transaction.DisposeAsync();
+            }
+        }
+
 
         // xử lý kiểm tra trùng lặp của 1 danh sách mã sku khi truyền lên
 

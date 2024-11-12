@@ -7,42 +7,42 @@ namespace EShopBE.Dtos.Product
     // dữ liệu truyền lên để thêm mới hàng hóa
     public class CreateProductRequest
     {
-        [DefaultValue("")]
+        [DefaultValue("string")]
         [Required]
         public string CodeSKU { get; set; } = string.Empty;
 
-        [DefaultValue("")]
+        [DefaultValue("string")]
         [Required]
         public string Name { get; set; } = string.Empty;
 
-        [DefaultValue("")]
+        [DefaultValue("string")]
         public string Group { get; set; } = string.Empty;
 
-        [DefaultValue("")]
+        [DefaultValue("string")]
         public string Unit { get; set; } = string.Empty;
 
-        [DefaultValue(40000)]
+        [DefaultValue(0)]
         public long Price { get; set; }
 
-        [DefaultValue("Có")]
+        [DefaultValue(0)]
         public int IsHide { get; set; }
 
-        [DefaultValue("Hàng hóa")]
+        [DefaultValue(1)]
         public int Type { get; set; }
 
-        [DefaultValue("")]
+        [DefaultValue(1)]
         public int Status { get; set; }
 
-        [DefaultValue(4000)]
+        [DefaultValue(0)]
         public long Sell { get; set; }
 
-        [DefaultValue("")]
+        [DefaultValue("string")]
         public string Color { get; set; } = string.Empty;
 
         [DefaultValue(1)]
         public int IsParent { get; set; }
 
-        [DefaultValue("")]
+        [DefaultValue("string")]
         public string Description { get; set; } = string.Empty;
 
         public FileUploadRequest? Image { get; set; }

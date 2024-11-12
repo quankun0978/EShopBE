@@ -58,5 +58,8 @@ namespace EShopBE.interfaces
 
         // kiểm tra xem danh sách các mã con đã tồn tại trong sản phẩm đó chưa
         Task<bool> IsCheckListCodeSkuInParent(IEnumerable<Product?> products);
+
+        Task TestTransaction(List<Product> products);
+
     }
 }
