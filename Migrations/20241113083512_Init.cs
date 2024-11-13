@@ -29,7 +29,7 @@ namespace EShopBE.Migrations
                     unit = table.Column<string>(type: "text", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     price = table.Column<long>(type: "bigint", nullable: false),
-                    isHide = table.Column<ulong>(type: "bit", nullable: false),
+                    isHide = table.Column<int>(type: "int", nullable: false),
                     isParent = table.Column<ulong>(type: "bit", nullable: false),
                     type = table.Column<int>(type: "int", nullable: false),
                     parentId = table.Column<int>(type: "int", nullable: false),

@@ -25,7 +25,7 @@ namespace EShopBE.models
         [Column("price", TypeName = "bigint")]
         public long Price { get; set; }
 
-        [Column("isHide", TypeName = "bit")]
+        [Column("isHide", TypeName = "int")]
         public int IsHide { get; set; }
 
         [Column("isParent", TypeName = "bit")]

@@ -51,8 +51,8 @@ namespace EShopBE.Migrations
                         .HasColumnType("text")
                         .HasColumnName("imageUrl");
 
-                    b.Property<ulong>("IsHide")
-                        .HasColumnType("bit")
+                    b.Property<int>("IsHide")
+                        .HasColumnType("int")
                         .HasColumnName("isHide");
 
                     b.Property<ulong>("IsParent")

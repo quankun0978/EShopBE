@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EShopBE.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20241106063150_Init")]
+    [Migration("20241113083512_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -54,8 +54,8 @@ namespace EShopBE.Migrations
                         .HasColumnType("text")
                         .HasColumnName("imageUrl");
 
-                    b.Property<ulong>("IsHide")
-                        .HasColumnType("bit")
+                    b.Property<int>("IsHide")
+                        .HasColumnType("int")
                         .HasColumnName("isHide");
 
                     b.Property<ulong>("IsParent")
